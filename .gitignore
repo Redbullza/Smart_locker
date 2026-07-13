@@ -1,0 +1,29 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local agent/MCP config may contain tokens
+.agents/mcp_config.json
+
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/

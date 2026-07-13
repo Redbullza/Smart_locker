@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Storage Locker — สถานะตู้ล็อกเกอร์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:        #1c2b39;
+    --paper:      #f6f4ef;
+    --panel:      #ffffff;
+    --gold:       #b98b2e;
+    --gold-soft:  #f1e4c8;
+    --ok:         #2f9e58;
+    --ok-soft:    #e3f3e8;
+    --danger:     #c0453b;
+    --danger-soft:#faeaea;
+    --line:       #e4dfd4;
+    --muted:      #767066;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 56px 28px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 28px;
+    margin-bottom: 36px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1.15;
+    margin: 0 0 8px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0;
+  }
+
+  .status-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 0 rgba(47,158,88,0.5);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(47,158,88,0.45); }
+    70%  { box-shadow: 0 0 0 8px rgba(47,158,88,0); }
+    100% { box-shadow: 0 0 0 0 rgba(47,158,88,0); }
+  }
+
+  /* ---------- Stats ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .stat {
+    background: var(--panel);
+    padding: 22px 24px;
+  }
+
+  .stat .num {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .stat .label {
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .stat.ok .num { color: var(--ok); }
+  .stat.danger .num { color: var(--danger); }
+
+  /* ---------- Section label ---------- */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .section-label span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .section-label .rule {
+    height: 1px;
+    background: var(--line);
+    width: 100%;
+  }
+
+  /* ---------- Locker grid ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .locker {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 18px 18px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .locker::before {
+    /* seam line, evokes an actual locker door */
+    content: "";
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 52px;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .locker:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(28,43,57,0.07);
+  }
+
+  .locker .dot {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .locker.available .dot { background: var(--ok); }
+  .locker.unavailable .dot { background: var(--danger); }
+
+  .locker .number {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+  }
+
+  .locker .location {
+    margin-top: 26px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .locker .pill {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .locker.available .pill { background: var(--ok-soft); color: var(--ok); }
+  .locker.unavailable .pill { background: var(--danger-soft); color: var(--danger); }
+
+  /* ---------- Empty / error state ---------- */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 14px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    margin-top: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .refresh-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  .refresh-btn:hover { border-color: var(--gold); }
+  .refresh-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  .updated {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse { animation: none; }
+    .locker { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Prince of Songkla University · Faculty of Liberal Arts</p>
+      <h1>สถานะตู้รับฝากของอัจฉริยะ</h1>
+      <p class="subtitle">จุดบริการตู้ล็อกเกอร์ ตึกคณะศิลปศาสตร์</p>
+    </div>
+    <div class="status-line">
+      <span class="pulse"></span>
+      เชื่อมต่อระบบแบบเรียลไทม์
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="num" id="stat-total">–</div>
+      <div class="label">ตู้ทั้งหมด</div>
+    </div>
+    <div class="stat ok">
+      <div class="num" id="stat-available">–</div>
+      <div class="label">ว่าง</div>
+    </div>
+    <div class="stat danger">
+      <div class="num" id="stat-unavailable">–</div>
+      <div class="label">ไม่ว่าง</div>
+    </div>
+  </div>
+
+  <div class="section-label">
+    <span>ผังตู้ล็อกเกอร์</span>
+    <div class="rule"></div>
+  </div>
+
+  <div class="grid" id="locker-grid">
+    <div class="empty">กำลังโหลดข้อมูลตู้ล็อกเกอร์...</div>
+  </div>
+
+  <footer>
+    <button class="refresh-btn" id="refresh-btn">รีเฟรชตอนนี้</button>
+    <span class="updated" id="updated-at">–</span>
+  </footer>
+
+</div>
+
+<script>
+  const grid = document.getElementById('locker-grid');
+  const statTotal = document.getElementById('stat-total');
+  const statAvailable = document.getElementById('stat-available');
+  const statUnavailable = document.getElementById('stat-unavailable');
+  const updatedAt = document.getElementById('updated-at');
+  const refreshBtn = document.getElementById('refresh-btn');
+
+  const STATUS_LABEL = { available: 'ว่าง', unavailable: 'ไม่ว่าง' };
+
+  async function loadLockers() {
+    try {
+      const res = await fetch('/lockers');
+      const json = await res.json();
+      const lockers = json.data || [];
+
+      if (lockers.length === 0) {
+        grid.innerHTML = '<div class="empty">ยังไม่มีตู้ล็อกเกอร์ในระบบ</div>';
+        statTotal.textContent = '0';
+        statAvailable.textContent = '0';
+        statUnavailable.textContent = '0';
+      } else {
+        grid.innerHTML = lockers.map(l => `
+          <div class="locker ${l.status}">
+            <span class="dot"></span>
+            <div class="number">${l.locker_number}</div>
+            <div class="location">${l.location}</div>
+            <span class="pill">${STATUS_LABEL[l.status] || l.status}</span>
+          </div>
+        `).join('');
+
+        statTotal.textContent = lockers.length;
+        statAvailable.textContent = lockers.filter(l => l.status === 'available').length;
+        statUnavailable.textContent = lockers.filter(l => l.status === 'unavailable').length;
+      }
+
+      const now = new Date();
+      updatedAt.textContent = 'อัปเดตล่าสุด ' + now.toLocaleTimeString('th-TH');
+    } catch (err) {
+      grid.innerHTML = '<div class="empty">เชื่อมต่อ API ไม่ได้ ตรวจสอบว่า server กำลังรันอยู่หรือไม่</div>';
+    }
+  }
+
+  refreshBtn.addEventListener('click', loadLockers);
+  loadLockers();
+  setInterval(loadLockers, 5000); // ดึงข้อมูลใหม่ทุก 5 วินาที ให้ดูเป็นเรียลไทม์
+</script>
+
+</body>
+</html>
