@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Storage Locker — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:        #1c2b39;
+    --paper:      #f6f4ef;
+    --panel:      #ffffff;
+    --gold:       #b98b2e;
+    --gold-soft:  #f1e4c8;
+    --ok:         #2f9e58;
+    --ok-soft:    #e3f3e8;
+    --danger:     #c0453b;
+    --danger-soft:#faeaea;
+    --warn:       #b9832e;
+    --warn-soft:  #f6ecdb;
+    --line:       #e4dfd4;
+    --muted:      #767066;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 64px; }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+    margin-bottom: 28px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 8px;
+  }
+
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(24px, 5vw, 34px); margin: 0 0 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .top-links a {
+    font-size: 12.5px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); padding: 7px 12px; border-radius: 8px;
+  }
+  .top-links a:hover { border-color: var(--gold); color: var(--ink); }
+
+  .guard-panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .guard-panel h2 { font-family: 'Fraunces', serif; margin: 0 0 8px; }
+  .guard-panel p { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+
+  .btn {
+    font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px;
+    cursor: pointer; background: var(--panel); color: var(--ink);
+    text-decoration: none; display: inline-block;
+  }
+  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn:hover { border-color: var(--gold); }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .stat { background: var(--panel); padding: 18px 16px; }
+  .stat .num { font-family: 'Fraunces', serif; font-size: clamp(22px, 5vw, 30px); font-weight: 600; line-height: 1; }
+  .stat .label { margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .stat.ok .num { color: var(--ok); }
+  .stat.danger .num { color: var(--danger); }
+
+  .section-label { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .section-label span {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); white-space: nowrap;
+  }
+  .section-label .rule { height: 1px; background: var(--line); width: 100%; }
+
+  .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  select, input[type="text"] {
+    font-family: 'Inter', sans-serif; font-size: 13.5px; padding: 9px 12px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink);
+  }
+
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow-x: auto;
+    margin-bottom: 32px;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  thead th {
+    text-align: left;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 13px 16px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--paper); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .badge.open { background: var(--ok-soft); color: var(--ok); }
+  .badge.close { background: var(--danger-soft); color: var(--danger); }
+  .badge.wrong_pin { background: var(--warn-soft); color: var(--warn); }
+  .badge.book { background: var(--gold-soft); color: var(--gold); }
+
+  .empty {
+    text-align: center; padding: 40px 16px; color: var(--muted); font-size: 13.5px;
+  }
+
+  footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .updated { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 28px 16px 48px; }
+    header { flex-direction: column; align-items: flex-start; }
+    .stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Prince of Songkla University · Faculty of Liberal Arts</p>
+      <h1>แผงควบคุมผู้ดูแลระบบ</h1>
+      <p class="subtitle">ประวัติการใช้งานตู้ล็อกเกอร์ทั้งหมด (Log Activity)</p>
+    </div>
+    <div class="top-links"><a href="/">← กลับหน้าหลัก</a></div>
+  </header>
+
+  <div class="guard-panel" id="guard-panel" style="display:none;">
+    <h2>ต้องเข้าสู่ระบบด้วยบัญชี Admin</h2>
+    <p>บัญชีของคุณไม่มีสิทธิ์เข้าถึงหน้านี้ กรุณาเข้าสู่ระบบด้วยบัญชีที่มี role เป็น admin</p>
+    <a class="btn primary" href="/">กลับไปหน้าหลักเพื่อเข้าสู่ระบบ</a>
+  </div>
+
+  <div id="admin-content" style="display:none;">
+
+    <div class="stats">
+      <div class="stat"><div class="num" id="stat-total">–</div><div class="label">ตู้ทั้งหมด</div></div>
+      <div class="stat ok"><div class="num" id="stat-available">–</div><div class="label">ว่าง</div></div>
+      <div class="stat danger"><div class="num" id="stat-unavailable">–</div><div class="label">ไม่ว่าง</div></div>
+    </div>
+
+    <div class="section-label"><span>ประวัติการใช้งาน (Log)</span><div class="rule"></div></div>
+
+    <div class="filter-row">
+      <select id="filter-action">
+        <option value="">ทุกประเภทเหตุการณ์</option>
+        <option value="book">จองตู้ (book)</option>
+        <option value="open">เปิดตู้ (open)</option>
+        <option value="close">คืนตู้ (close)</option>
+        <option value="wrong_pin">กรอก PIN ผิด (wrong_pin)</option>
+      </select>
+      <input type="text" id="filter-search" placeholder="ค้นหาชื่อผู้ใช้หรือหมายเลขตู้...">
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>เวลา</th>
+            <th>ตู้</th>
+            <th>ผู้ใช้งาน</th>
+            <th>เหตุการณ์</th>
+          </tr>
+        </thead>
+        <tbody id="log-tbody">
+          <tr><td colspan="4" class="empty">กำลังโหลดข้อมูล...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      <button class="btn" id="refresh-btn">รีเฟรชตอนนี้</button>
+      <span class="updated" id="updated-at">–</span>
+    </footer>
+
+  </div>
+
+</div>
+
+<script>
+  const el = (id) => document.getElementById(id);
+  const currentUser = JSON.parse(localStorage.getItem('locker_user') || 'null');
+
+  const ACTION_LABEL = { book: 'จองตู้', open: 'ปลดล็อกตู้', close: 'คืนตู้ (ว่าง)', wrong_pin: 'กรอก PIN ผิด' };
+
+  if (!currentUser || currentUser.role !== 'admin') {
+    el('guard-panel').style.display = 'block';
+  } else {
+    el('admin-content').style.display = 'block';
+    loadDashboard();
+    loadLogs();
+    setInterval(() => { loadDashboard(); loadLogs(); }, 5000);
+  }
+
+  async function loadDashboard() {
+    const res = await fetch('/dashboard');
+    const json = await res.json();
+    const d = json.data || {};
+    el('stat-total').textContent = d.total_lockers ?? '0';
+    el('stat-available').textContent = d.available_lockers ?? '0';
+    el('stat-unavailable').textContent = d.in_use_lockers ?? '0';
+  }
+
+  let allLogs = [];
+
+  async function loadLogs() {
+    try {
+      const res = await fetch('/logs');
+      const json = await res.json();
+      allLogs = json.data || [];
+      renderLogs();
+      el('updated-at').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
+    } catch (err) {
+      el('log-tbody').innerHTML = '<tr><td colspan="4" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
+    }
+  }
+
+  function renderLogs() {
+    const actionFilter = el('filter-action').value;
+    const search = el('filter-search').value.trim().toLowerCase();
+
+    let rows = allLogs;
+    if (actionFilter) rows = rows.filter(r => r.action === actionFilter);
+    if (search) {
+      rows = rows.filter(r =>
+        (r.locker_number || '').toLowerCase().includes(search) ||
+        (r.firstname || '').toLowerCase().includes(search) ||
+        (r.lastname || '').toLowerCase().includes(search)
+      );
+    }
+
+    if (rows.length === 0) {
+      el('log-tbody').innerHTML = '<tr><td colspan="4" class="empty">ไม่พบข้อมูล</td></tr>';
+      return;
+    }
+
+    el('log-tbody').innerHTML = rows.map(r => `
+      <tr>
+        <td>${new Date(r.timestamp).toLocaleString('th-TH')}</td>
+        <td>${r.locker_number}</td>
+        <td>${r.firstname} ${r.lastname}</td>
+        <td><span class="badge ${r.action}">${ACTION_LABEL[r.action] || r.action}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  el('filter-action').addEventListener('change', renderLogs);
+  el('filter-search').addEventListener('input', renderLogs);
+  el('refresh-btn')?.addEventListener('click', () => { loadDashboard(); loadLogs(); });
+</script>
+
+</body>
+</html>

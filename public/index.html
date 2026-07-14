@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Storage Locker — สถานะตู้ล็อกเกอร์</title>
+<title>Smart Storage Locker — ระบบทดสอบ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -34,7 +34,7 @@
   .wrap {
     max-width: 1040px;
     margin: 0 auto;
-    padding: 56px 28px 80px;
+    padding: 40px 20px 64px;
   }
 
   /* ---------- Header ---------- */
@@ -43,58 +43,125 @@
     justify-content: space-between;
     align-items: flex-end;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
     border-bottom: 1px solid var(--line);
-    padding-bottom: 28px;
-    margin-bottom: 36px;
+    padding-bottom: 24px;
+    margin-bottom: 28px;
   }
 
   .eyebrow {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--gold);
-    margin: 0 0 10px;
+    margin: 0 0 8px;
   }
 
   h1 {
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 38px;
+    font-size: clamp(26px, 5vw, 38px);
     line-height: 1.15;
-    margin: 0 0 8px;
+    margin: 0 0 6px;
   }
 
-  .subtitle {
+  .subtitle { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .top-links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .top-links a {
+    font-size: 12.5px;
+    font-weight: 600;
     color: var(--muted);
-    font-size: 15px;
-    margin: 0;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    padding: 7px 12px;
+    border-radius: 8px;
+  }
+  .top-links a:hover { border-color: var(--gold); color: var(--ink); }
+
+  /* ---------- Auth panel ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 22px;
+    margin-bottom: 32px;
   }
 
-  .status-line {
+  .panel h2 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 0 0 14px; }
+
+  .account-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .account-info { font-size: 14px; }
+  .account-info b { font-weight: 600; }
+  .account-info .role {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  input[type="text"], input[type="password"] {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    flex: 1;
+    min-width: 130px;
+    width: 100%;
+  }
+  input:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 18px;
+    cursor: pointer;
+    background: var(--panel);
+    color: var(--ink);
+    white-space: nowrap;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .btn:hover { border-color: var(--gold); }
+  .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn.primary:hover { background: #101c27; }
+  .btn.ghost { background: transparent; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .toggle-link {
     font-size: 13px;
     color: var(--muted);
-    font-family: 'IBM Plex Mono', monospace;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-top: 10px;
   }
 
-  .pulse {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--ok);
-    box-shadow: 0 0 0 0 rgba(47,158,88,0.5);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%   { box-shadow: 0 0 0 0 rgba(47,158,88,0.45); }
-    70%  { box-shadow: 0 0 0 8px rgba(47,158,88,0); }
-    100% { box-shadow: 0 0 0 0 rgba(47,158,88,0); }
-  }
+  .msg { margin-top: 12px; font-size: 13px; padding: 9px 12px; border-radius: 8px; }
+  .msg.error { background: var(--danger-soft); color: var(--danger); }
+  .msg.success { background: var(--ok-soft); color: var(--ok); }
 
   /* ---------- Stats ---------- */
   .stats {
@@ -105,59 +172,32 @@
     border: 1px solid var(--line);
     border-radius: 14px;
     overflow: hidden;
-    margin-bottom: 40px;
+    margin-bottom: 36px;
   }
-
-  .stat {
-    background: var(--panel);
-    padding: 22px 24px;
-  }
-
-  .stat .num {
-    font-family: 'Fraunces', serif;
-    font-size: 34px;
-    font-weight: 600;
-    line-height: 1;
-  }
-
-  .stat .label {
-    margin-top: 6px;
-    font-size: 12.5px;
-    color: var(--muted);
-    letter-spacing: 0.02em;
-  }
-
+  .stat { background: var(--panel); padding: 18px 16px; }
+  .stat .num { font-family: 'Fraunces', serif; font-size: clamp(24px, 5vw, 34px); font-weight: 600; line-height: 1; }
+  .stat .label { margin-top: 6px; font-size: 12px; color: var(--muted); }
   .stat.ok .num { color: var(--ok); }
   .stat.danger .num { color: var(--danger); }
 
   /* ---------- Section label ---------- */
-  .section-label {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-
+  .section-label { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
   .section-label span {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.1em;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
     white-space: nowrap;
   }
-
-  .section-label .rule {
-    height: 1px;
-    background: var(--line);
-    width: 100%;
-  }
+  .section-label .rule { height: 1px; background: var(--line); width: 100%; }
 
   /* ---------- Locker grid ---------- */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 40px;
   }
 
   .locker {
@@ -165,109 +205,101 @@
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 12px;
-    padding: 20px 18px 18px;
+    padding: 18px 16px 16px;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-
   .locker::before {
-    /* seam line, evokes an actual locker door */
     content: "";
     position: absolute;
-    left: 18px;
-    right: 18px;
-    top: 52px;
+    left: 16px; right: 16px; top: 48px;
     height: 1px;
     background: var(--line);
   }
+  .locker:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(28,43,57,0.07); }
 
-  .locker:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(28,43,57,0.07);
-  }
-
-  .locker .dot {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-
+  .locker .dot { position: absolute; top: 16px; right: 16px; width: 10px; height: 10px; border-radius: 50%; }
   .locker.available .dot { background: var(--ok); }
   .locker.unavailable .dot { background: var(--danger); }
 
-  .locker .number {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 600;
-  }
+  .locker .number { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; }
+  .locker .location { margin-top: 22px; font-size: 11.5px; color: var(--muted); line-height: 1.4; min-height: 30px; }
 
-  .locker .location {
-    margin-top: 26px;
-    font-size: 12.5px;
-    color: var(--muted);
-    line-height: 1.4;
-  }
-
-  .locker .pill {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 11.5px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-  }
-
+  .locker .pill { display: inline-block; margin-top: 8px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
   .locker.available .pill { background: var(--ok-soft); color: var(--ok); }
   .locker.unavailable .pill { background: var(--danger-soft); color: var(--danger); }
 
-  /* ---------- Empty / error state ---------- */
-  .empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-    font-size: 14px;
-    border: 1px dashed var(--line);
-    border-radius: 12px;
-  }
+  .locker .btn { margin-top: 10px; width: 100%; padding: 8px 10px; font-size: 12px; }
 
-  /* ---------- Footer ---------- */
-  footer {
-    margin-top: 48px;
+  /* ---------- Booking list ---------- */
+  .booking {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
-
-  .refresh-btn {
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink);
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 9px 16px;
-    cursor: pointer;
-    transition: border-color 0.15s ease;
-  }
-
-  .refresh-btn:hover { border-color: var(--gold); }
-  .refresh-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-
-  .updated {
+  .booking .info { font-size: 13px; }
+  .booking .info b { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; }
+  .booking .pin-tag {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
+    background: var(--gold-soft);
+    color: var(--gold);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    margin-left: 6px;
+  }
+  .booking .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .empty {
+    text-align: center; padding: 36px 16px; color: var(--muted); font-size: 13.5px;
+    border: 1px dashed var(--line); border-radius: 12px;
+  }
+  .grid .empty { grid-column: 1 / -1; }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(28,43,57,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 50;
+  }
+  .overlay.show { display: flex; }
+  .modal { background: var(--panel); border-radius: 14px; padding: 24px; max-width: 360px; width: 100%; }
+  .modal h3 { font-family: 'Fraunces', serif; font-size: 19px; margin: 0 0 6px; }
+  .modal p { font-size: 13px; color: var(--muted); margin: 0 0 16px; }
+  .modal .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal .modal-actions .btn { flex: 1; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px; margin-top: 32px;
+  }
+  .updated { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); }
+
+  /* ---------- Responsive breakpoints ---------- */
+  @media (max-width: 640px) {
+    .wrap { padding: 28px 16px 48px; }
+    header { flex-direction: column; align-items: flex-start; }
+    .stats { grid-template-columns: 1fr; }
+    .form-row input { min-width: 100%; }
+    .account-row { flex-direction: column; align-items: flex-start; }
+    .booking { flex-direction: column; align-items: flex-start; }
+    .booking .actions { width: 100%; }
+    .booking .actions .btn { flex: 1; }
+    footer { flex-direction: column; align-items: flex-start; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .pulse { animation: none; }
     .locker { transition: none; }
   }
 </style>
@@ -279,53 +311,182 @@
   <header>
     <div>
       <p class="eyebrow">Prince of Songkla University · Faculty of Liberal Arts</p>
-      <h1>สถานะตู้รับฝากของอัจฉริยะ</h1>
-      <p class="subtitle">จุดบริการตู้ล็อกเกอร์ ตึกคณะศิลปศาสตร์</p>
+      <h1>ระบบตู้รับฝากของอัจฉริยะ</h1>
+      <p class="subtitle">จุดบริการตู้ล็อกเกอร์ ตึกคณะศิลปศาสตร์ — หน้าทดสอบระบบ</p>
     </div>
-    <div class="status-line">
-      <span class="pulse"></span>
-      เชื่อมต่อระบบแบบเรียลไทม์
+    <div class="top-links">
+      <a href="/admin.html">หน้า Admin →</a>
     </div>
   </header>
 
+  <!-- ============== บัญชีผู้ใช้ ============== -->
+  <div class="panel" id="auth-panel">
+
+    <div id="logged-out-view">
+      <h2 id="auth-title">เข้าสู่ระบบเพื่อจองตู้</h2>
+      <div class="form-row">
+        <input type="text" id="username" placeholder="ชื่อผู้ใช้ (username)">
+        <input type="password" id="password" placeholder="รหัสผ่าน">
+      </div>
+      <div class="form-row" id="register-extra-fields" style="display:none; margin-top:10px;">
+        <input type="text" id="firstname" placeholder="ชื่อจริง">
+        <input type="text" id="lastname" placeholder="นามสกุล">
+      </div>
+      <div class="form-row" style="margin-top:14px;">
+        <button class="btn primary" id="submit-btn">เข้าสู่ระบบ</button>
+      </div>
+      <button class="toggle-link" id="toggle-mode">ยังไม่มีบัญชี? สมัครสมาชิก</button>
+      <div id="auth-msg"></div>
+    </div>
+
+    <div id="logged-in-view" style="display:none;">
+      <div class="account-row">
+        <div class="account-info">
+          เข้าสู่ระบบเป็น <b id="account-name">–</b>
+          <span class="role" id="account-role">user</span>
+        </div>
+        <button class="btn ghost" id="logout-btn">ออกจากระบบ</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============== สรุปสถานะ ============== -->
   <div class="stats">
-    <div class="stat">
-      <div class="num" id="stat-total">–</div>
-      <div class="label">ตู้ทั้งหมด</div>
-    </div>
-    <div class="stat ok">
-      <div class="num" id="stat-available">–</div>
-      <div class="label">ว่าง</div>
-    </div>
-    <div class="stat danger">
-      <div class="num" id="stat-unavailable">–</div>
-      <div class="label">ไม่ว่าง</div>
-    </div>
+    <div class="stat"><div class="num" id="stat-total">–</div><div class="label">ตู้ทั้งหมด</div></div>
+    <div class="stat ok"><div class="num" id="stat-available">–</div><div class="label">ว่าง</div></div>
+    <div class="stat danger"><div class="num" id="stat-unavailable">–</div><div class="label">ไม่ว่าง</div></div>
   </div>
 
-  <div class="section-label">
-    <span>ผังตู้ล็อกเกอร์</span>
-    <div class="rule"></div>
-  </div>
-
+  <!-- ============== ผังตู้ล็อกเกอร์ ============== -->
+  <div class="section-label"><span>ผังตู้ล็อกเกอร์ — กดจองตู้ที่ว่าง</span><div class="rule"></div></div>
   <div class="grid" id="locker-grid">
     <div class="empty">กำลังโหลดข้อมูลตู้ล็อกเกอร์...</div>
   </div>
 
+  <!-- ============== รายการจองของฉัน ============== -->
+  <div class="section-label"><span>รายการจองของฉัน</span><div class="rule"></div></div>
+  <div id="my-bookings">
+    <div class="empty">เข้าสู่ระบบก่อนเพื่อดูรายการจองของคุณ</div>
+  </div>
+
   <footer>
-    <button class="refresh-btn" id="refresh-btn">รีเฟรชตอนนี้</button>
+    <button class="btn ghost" id="refresh-btn">รีเฟรชตอนนี้</button>
     <span class="updated" id="updated-at">–</span>
   </footer>
 
 </div>
 
+<!-- ============== Modal: แสดงรหัส PIN หลังจองสำเร็จ ============== -->
+<div class="overlay" id="pin-result-overlay">
+  <div class="modal">
+    <h3>จองตู้สำเร็จ</h3>
+    <p>จำรหัสนี้ไว้ให้ดี ใช้สำหรับเปิด-ปิดตู้ของคุณ</p>
+    <div style="text-align:center;">
+      <span class="pin-tag" style="font-size:20px; padding:10px 20px;" id="pin-result-code">------</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="pin-result-close">รับทราบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============== Modal: กรอกรหัส PIN เพื่อเปิด/คืนตู้ ============== -->
+<div class="overlay" id="pin-input-overlay">
+  <div class="modal">
+    <h3 id="pin-input-title">กรอกรหัส PIN</h3>
+    <p id="pin-input-desc">กรอกรหัส 6 หลักที่ได้รับตอนจองตู้</p>
+    <input type="text" id="pin-input-value" placeholder="เช่น 123456" maxlength="6">
+    <div id="pin-input-msg"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="pin-input-cancel">ยกเลิก</button>
+      <button class="btn primary" id="pin-input-confirm">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  const grid = document.getElementById('locker-grid');
-  const statTotal = document.getElementById('stat-total');
-  const statAvailable = document.getElementById('stat-available');
-  const statUnavailable = document.getElementById('stat-unavailable');
-  const updatedAt = document.getElementById('updated-at');
-  const refreshBtn = document.getElementById('refresh-btn');
+  let currentUser = JSON.parse(localStorage.getItem('locker_user') || 'null');
+  let isRegisterMode = false;
+  let pendingAction = null; // { booking_id, action: 'open' | 'close' }
+
+  const el = (id) => document.getElementById(id);
+
+  function renderAuth() {
+    if (currentUser) {
+      el('logged-out-view').style.display = 'none';
+      el('logged-in-view').style.display = 'block';
+      el('account-name').textContent = currentUser.firstname + ' ' + currentUser.lastname;
+      el('account-role').textContent = currentUser.role;
+    } else {
+      el('logged-out-view').style.display = 'block';
+      el('logged-in-view').style.display = 'none';
+      el('my-bookings').innerHTML = '<div class="empty">เข้าสู่ระบบก่อนเพื่อดูรายการจองของคุณ</div>';
+    }
+  }
+
+  el('toggle-mode').addEventListener('click', () => {
+    isRegisterMode = !isRegisterMode;
+    el('auth-title').textContent = isRegisterMode ? 'สมัครสมาชิกใหม่' : 'เข้าสู่ระบบเพื่อจองตู้';
+    el('submit-btn').textContent = isRegisterMode ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+    el('toggle-mode').textContent = isRegisterMode ? 'มีบัญชีอยู่แล้ว? เข้าสู่ระบบ' : 'ยังไม่มีบัญชี? สมัครสมาชิก';
+    el('register-extra-fields').style.display = isRegisterMode ? 'flex' : 'none';
+    el('auth-msg').innerHTML = '';
+  });
+
+  el('submit-btn').addEventListener('click', async () => {
+    const username = el('username').value.trim();
+    const password = el('password').value;
+    if (!username || !password) {
+      el('auth-msg').innerHTML = '<div class="msg error">กรุณากรอก username และ password</div>';
+      return;
+    }
+
+    if (isRegisterMode) {
+      const firstname = el('firstname').value.trim();
+      const lastname = el('lastname').value.trim();
+      if (!firstname || !lastname) {
+        el('auth-msg').innerHTML = '<div class="msg error">กรุณากรอกชื่อ-นามสกุล</div>';
+        return;
+      }
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, firstname, lastname }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        el('auth-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
+        return;
+      }
+      el('auth-msg').innerHTML = '<div class="msg success">สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ</div>';
+      el('toggle-mode').click();
+      return;
+    }
+
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const json = await res.json();
+    if (!json.success) {
+      el('auth-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
+      return;
+    }
+
+    currentUser = json;
+    localStorage.setItem('locker_user', JSON.stringify(currentUser));
+    el('auth-msg').innerHTML = '';
+    renderAuth();
+    loadMyBookings();
+  });
+
+  el('logout-btn').addEventListener('click', () => {
+    currentUser = null;
+    localStorage.removeItem('locker_user');
+    renderAuth();
+  });
 
   const STATUS_LABEL = { available: 'ว่าง', unavailable: 'ไม่ว่าง' };
 
@@ -335,11 +496,9 @@
       const json = await res.json();
       const lockers = json.data || [];
 
+      const grid = el('locker-grid');
       if (lockers.length === 0) {
         grid.innerHTML = '<div class="empty">ยังไม่มีตู้ล็อกเกอร์ในระบบ</div>';
-        statTotal.textContent = '0';
-        statAvailable.textContent = '0';
-        statUnavailable.textContent = '0';
       } else {
         grid.innerHTML = lockers.map(l => `
           <div class="locker ${l.status}">
@@ -347,24 +506,122 @@
             <div class="number">${l.locker_number}</div>
             <div class="location">${l.location}</div>
             <span class="pill">${STATUS_LABEL[l.status] || l.status}</span>
+            ${l.status === 'available'
+              ? `<button class="btn primary" onclick="bookLocker(${l.locker_id})" ${currentUser ? '' : 'disabled'}>
+                   ${currentUser ? 'จองตู้นี้' : 'เข้าสู่ระบบก่อน'}
+                 </button>`
+              : ''}
           </div>
         `).join('');
-
-        statTotal.textContent = lockers.length;
-        statAvailable.textContent = lockers.filter(l => l.status === 'available').length;
-        statUnavailable.textContent = lockers.filter(l => l.status === 'unavailable').length;
       }
 
-      const now = new Date();
-      updatedAt.textContent = 'อัปเดตล่าสุด ' + now.toLocaleTimeString('th-TH');
+      el('stat-total').textContent = lockers.length;
+      el('stat-available').textContent = lockers.filter(l => l.status === 'available').length;
+      el('stat-unavailable').textContent = lockers.filter(l => l.status === 'unavailable').length;
+      el('updated-at').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
     } catch (err) {
-      grid.innerHTML = '<div class="empty">เชื่อมต่อ API ไม่ได้ ตรวจสอบว่า server กำลังรันอยู่หรือไม่</div>';
+      el('locker-grid').innerHTML = '<div class="empty">เชื่อมต่อ API ไม่ได้ ตรวจสอบว่า server กำลังรันอยู่หรือไม่</div>';
     }
   }
 
-  refreshBtn.addEventListener('click', loadLockers);
+  async function bookLocker(locker_id) {
+    if (!currentUser) return;
+    const res = await fetch('/booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: currentUser.user_id, locker_id }),
+    });
+    const json = await res.json();
+    if (!json.success) {
+      alert(json.message);
+      return;
+    }
+    el('pin-result-code').textContent = json.pin_code;
+    el('pin-result-overlay').classList.add('show');
+    loadLockers();
+    loadMyBookings();
+  }
+  window.bookLocker = bookLocker;
+
+  el('pin-result-close').addEventListener('click', () => {
+    el('pin-result-overlay').classList.remove('show');
+  });
+
+  async function loadMyBookings() {
+    if (!currentUser) return;
+    const res = await fetch('/my-bookings?user_id=' + currentUser.user_id);
+    const json = await res.json();
+    const bookings = (json.data || []).filter(b => b.status === 'active');
+
+    const box = el('my-bookings');
+    if (bookings.length === 0) {
+      box.innerHTML = '<div class="empty">ยังไม่มีรายการจองที่ใช้งานอยู่</div>';
+      return;
+    }
+
+    box.innerHTML = bookings.map(b => `
+      <div class="booking">
+        <div class="info">
+          ตู้ <b>${b.locker_number}</b>
+          <span class="pin-tag">PIN: ${b.pin_code}</span><br>
+          <span style="color:var(--muted);">${b.location}</span>
+        </div>
+        <div class="actions">
+          <button class="btn primary" onclick="openPinModal(${b.booking_id}, 'open')">ปลดล็อกตู้</button>
+          <button class="btn ghost" onclick="openPinModal(${b.booking_id}, 'close')">คืนตู้ (ว่าง)</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openPinModal(booking_id, action) {
+    pendingAction = { booking_id, action };
+    el('pin-input-title').textContent = action === 'open' ? 'กรอกรหัส PIN เพื่อปลดล็อก' : 'กรอกรหัส PIN เพื่อคืนตู้';
+    el('pin-input-desc').textContent = action === 'open'
+      ? 'ยืนยันรหัสเพื่อเปิดตู้ฝากของ (ระบบจะบันทึก log ว่ามีการเปิดตู้)'
+      : 'ยืนยันรหัสเพื่อคืนตู้ — ตู้จะกลับเป็นสถานะว่างทันที';
+    el('pin-input-value').value = '';
+    el('pin-input-msg').innerHTML = '';
+    el('pin-input-overlay').classList.add('show');
+  }
+  window.openPinModal = openPinModal;
+
+  el('pin-input-cancel').addEventListener('click', () => {
+    el('pin-input-overlay').classList.remove('show');
+    pendingAction = null;
+  });
+
+  el('pin-input-confirm').addEventListener('click', async () => {
+    if (!pendingAction) return;
+    const pin_code = el('pin-input-value').value.trim();
+    if (!pin_code) {
+      el('pin-input-msg').innerHTML = '<div class="msg error">กรุณากรอกรหัส PIN</div>';
+      return;
+    }
+
+    const res = await fetch('/verify-pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ booking_id: pendingAction.booking_id, pin_code, action: pendingAction.action }),
+    });
+    const json = await res.json();
+    if (!json.success) {
+      el('pin-input-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
+      return;
+    }
+
+    el('pin-input-overlay').classList.remove('show');
+    pendingAction = null;
+    loadLockers();
+    loadMyBookings();
+  });
+
+  el('refresh-btn').addEventListener('click', () => { loadLockers(); loadMyBookings(); });
+
+  renderAuth();
   loadLockers();
-  setInterval(loadLockers, 5000); // ดึงข้อมูลใหม่ทุก 5 วินาที ให้ดูเป็นเรียลไทม์
+  loadMyBookings();
+  setInterval(loadLockers, 5000);
 </script>
 
 </body>

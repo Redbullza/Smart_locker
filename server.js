@@ -1,3 +1,16 @@
+/**
+ * ==================================================================
+ *  SMART STORAGE LOCKER - BACKEND (เวอร์ชันไฟล์เดียว อธิบายง่าย)
+ * ==================================================================
+ *  ไฟล์นี้รวมทุกอย่างไว้ในที่เดียว เพื่อให้อ่านและอธิบายได้ทีละส่วน
+ *  แบ่งเป็น 5 ส่วนหลัก ตรงกับ DFD Level 1 ในเล่มโครงงาน (บทที่ 3.2):
+ *    1. ระบบตรวจสอบสิทธิ์การเข้าใช้งาน   -> /register, /login
+ *    2. ระบบจองตู้                        -> /booking
+ *    3. ระบบตรวจสอบรหัส PIN               -> /verify-pin
+ *    4. ระบบควบคุมการทำงาน (เปิด/ปิดตู้)   -> อยู่รวมใน /verify-pin
+ *    5. ระบบบันทึกประวัติการใช้งาน         -> /logs
+ * ==================================================================
+ */
 
 const express = require('express');
 const mysql = require('mysql2/promise');
@@ -104,6 +117,9 @@ app.post('/booking', async (req, res) => {
     [user_id, locker_id, pinCode]
   );
   await db.query('UPDATE lockers SET status = "unavailable" WHERE locker_id = ?', [locker_id]);
+
+  // บันทึก log ว่ามีการจองตู้เกิดขึ้น เพื่อให้แอดมินเห็นประวัติครบทุกขั้นตอน
+  await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "book")', [locker_id, user_id]);
 
   res.json({
     success: true,
