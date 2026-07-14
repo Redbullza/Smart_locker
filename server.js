@@ -1,30 +1,13 @@
-/**
- * ==================================================================
- *  SMART STORAGE LOCKER - BACKEND (เวอร์ชันไฟล์เดียว อธิบายง่าย)
- * ==================================================================
- *  ไฟล์นี้รวมทุกอย่างไว้ในที่เดียว เพื่อให้อ่านและอธิบายได้ทีละส่วน
- *  แบ่งเป็น 5 ส่วนหลัก ตรงกับ DFD Level 1 ในเล่มโครงงาน (บทที่ 3.2):
- *    1. ระบบตรวจสอบสิทธิ์การเข้าใช้งาน   -> /register, /login
- *    2. ระบบจองตู้                        -> /booking
- *    3. ระบบตรวจสอบรหัส PIN               -> /verify-pin
- *    4. ระบบควบคุมการทำงาน (เปิด/ปิดตู้)   -> อยู่รวมใน /verify-pin
- *    5. ระบบบันทึกประวัติการใช้งาน         -> /logs
- * ==================================================================
- */
-
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
-app.use(express.json()); // ให้ Express อ่านข้อมูลแบบ JSON จาก body ได้
-app.use(express.static('public')); // เสิร์ฟหน้าเว็บ (HTML/CSS/JS) จากโฟลเดอร์ public
-// เข้าหน้าเว็บได้ที่ http://localhost:5000/  (ไฟล์ public/index.html จะถูกเรียกอัตโนมัติ)
+app.use(express.json()); 
+app.use(express.static('public')); 
+// เข้าหน้าเว็บได้ที่ http://localhost:5000/ 
 
-// ------------------------------------------------------------------
-// เชื่อมต่อฐานข้อมูล MySQL (ตามที่ระบุใน 1.5 เครื่องมือที่ใช้ -> MySQL/XAMPP)
-// ------------------------------------------------------------------
 const db = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -32,9 +15,6 @@ const db = mysql.createPool({
   database: process.env.DB_NAME || 'smart_locker',
 });
 
-// ==================================================================
-// ส่วนที่ 1: ระบบตรวจสอบสิทธิ์การเข้าใช้งาน (User Authentication)
-// ==================================================================
 
 // สมัครสมาชิก
 app.post('/register', async (req, res) => {
@@ -57,8 +37,6 @@ app.post('/register', async (req, res) => {
     res.status(400).json({ success: false, message: 'ชื่อผู้ใช้นี้มีอยู่แล้ว' });
   }
 });
-
-// เข้าสู่ระบบ (login_status, user_id ตาม Context Diagram ภาพที่ 3.2.1)
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -73,8 +51,6 @@ app.post('/login', async (req, res) => {
     return res.status(401).json({ success: false, message: 'รหัสผ่านไม่ถูกต้อง' });
   }
 
-  // หมายเหตุ: เวอร์ชันนี้ตัดระบบ Token (JWT) ออกเพื่อความง่าย
-  // ฝั่งแอปพลิเคชันจะได้ user_id กลับไป แล้วส่ง user_id แนบไปกับทุกคำขอครั้งถัดไปแทน
   res.json({
     success: true,
     message: 'เข้าสู่ระบบสำเร็จ',
@@ -85,11 +61,6 @@ app.post('/login', async (req, res) => {
   });
 });
 
-// ==================================================================
-// ส่วนที่ 2: ระบบจองตู้ (Booking Locker)
-// ==================================================================
-
-// ดูสถานะตู้ทั้งหมด (สีเขียว = available / สีแดง = unavailable ตาม UI ในเล่ม)
 app.get('/lockers', async (req, res) => {
   const [lockers] = await db.query('SELECT * FROM lockers ORDER BY locker_number');
   res.json({ success: true, data: lockers });
@@ -99,7 +70,7 @@ app.get('/lockers', async (req, res) => {
 app.post('/booking', async (req, res) => {
   const { user_id, locker_id } = req.body;
 
-  // 1) ตรวจสอบว่าตู้ว่างจริงหรือไม่
+  //  ตรวจสอบว่าตู้ว่างจริงหรือไม่
   const [lockerRows] = await db.query('SELECT * FROM lockers WHERE locker_id = ?', [locker_id]);
   if (lockerRows.length === 0) {
     return res.status(404).json({ success: false, message: 'ไม่พบตู้ล็อกเกอร์นี้' });
@@ -108,17 +79,16 @@ app.post('/booking', async (req, res) => {
     return res.status(400).json({ success: false, message: 'ตู้นี้ไม่ว่างแล้ว' });
   }
 
-  // 2) สุ่มรหัส PIN 6 หลัก สำหรับใช้เปิด-ปิดตู้
+  //  สุ่มรหัส PIN 6 หลัก สำหรับใช้เปิด-ปิดตู้
   const pinCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // 3) บันทึกการจอง และเปลี่ยนสถานะตู้เป็น "ไม่ว่าง"
+  //  บันทึกการจอง และเปลี่ยนสถานะตู้เป็น "ไม่ว่าง"
   const [result] = await db.query(
     'INSERT INTO bookings (user_id, locker_id, pin_code, status) VALUES (?, ?, ?, "active")',
     [user_id, locker_id, pinCode]
   );
   await db.query('UPDATE lockers SET status = "unavailable" WHERE locker_id = ?', [locker_id]);
 
-  // บันทึก log ว่ามีการจองตู้เกิดขึ้น เพื่อให้แอดมินเห็นประวัติครบทุกขั้นตอน
   await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "book")', [locker_id, user_id]);
 
   res.json({
@@ -129,7 +99,7 @@ app.post('/booking', async (req, res) => {
   });
 });
 
-// ดูรายการจองของผู้ใช้คนหนึ่ง (ใช้ query string: /my-bookings?user_id=1)
+// ดูรายการจองของผู้ใช้คนหนึ่ง 
 app.get('/my-bookings', async (req, res) => {
   const { user_id } = req.query;
   const [rows] = await db.query(
@@ -141,9 +111,6 @@ app.get('/my-bookings', async (req, res) => {
   res.json({ success: true, data: rows });
 });
 
-// ==================================================================
-// ส่วนที่ 3 และ 4: ตรวจสอบรหัส PIN + ควบคุมการเปิด/ปิดตู้ (Locker Control)
-// ==================================================================
 
 // ผู้ใช้กรอกรหัส PIN เพื่อเปิดตู้ฝากของ หรือเปิดตู้เอาของออก
 app.post('/verify-pin', async (req, res) => {
@@ -165,10 +132,6 @@ app.post('/verify-pin', async (req, res) => {
     return res.status(401).json({ success: false, message: 'รหัส PIN ไม่ถูกต้อง' });
   }
 
-  // สั่งงานกลอนแม่เหล็กไฟฟ้า (Solenoid Lock) ผ่านบอร์ด ESP32
-  // TODO: ในระบบจริงจะยิง request ไปหา ESP32 ตรงนี้ เช่น
-  // await fetch(`http://<esp32-ip>/lock?locker=${booking.locker_id}&action=${action}`);
-
   // ถ้าเป็นการ "close" หมายถึงผู้ใช้เอาของออกและคืนตู้แล้ว -> ปิดการจอง + ตู้กลับมาว่าง
   if (action === 'close') {
     await db.query('UPDATE bookings SET status = "completed" WHERE booking_id = ?', [booking_id]);
@@ -185,9 +148,6 @@ app.post('/verify-pin', async (req, res) => {
   res.json({ success: true, message: action === 'open' ? 'ปลดล็อกตู้สำเร็จ' : 'คืนตู้สำเร็จ' });
 });
 
-// ==================================================================
-// ส่วนที่ 5: ระบบบันทึกและเรียกดูประวัติการใช้งาน (สำหรับ Admin)
-// ==================================================================
 
 app.get('/logs', async (req, res) => {
   const [rows] = await db.query(
@@ -212,9 +172,6 @@ app.get('/dashboard', async (req, res) => {
   res.json({ success: true, data: summary });
 });
 
-// ------------------------------------------------------------------
-// เริ่มรันเซิร์ฟเวอร์
-// ------------------------------------------------------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Smart Storage Locker API กำลังทำงานที่ http://localhost:${PORT}`);
