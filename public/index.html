@@ -8,304 +8,120 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink:        #1c2b39;
-    --paper:      #f6f4ef;
-    --panel:      #ffffff;
-    --gold:       #b98b2e;
-    --gold-soft:  #f1e4c8;
-    --ok:         #2f9e58;
-    --ok-soft:    #e3f3e8;
-    --danger:     #c0453b;
-    --danger-soft:#faeaea;
-    --grey:       #6b7280;
-    --grey-soft:  #eceef0;
-    --line:       #e4dfd4;
-    --muted:      #767066;
+    --ink:#1c2b39; --paper:#f6f4ef; --panel:#ffffff;
+    --gold:#b98b2e; --gold-soft:#f1e4c8;
+    --ok:#2f9e58; --ok-soft:#e3f3e8;
+    --danger:#c0453b; --danger-soft:#faeaea;
+    --grey:#6b7280; --grey-soft:#eceef0;
+    --line:#e4dfd4; --muted:#767066;
   }
-
   * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh; }
+  .wrap { max-width:1040px; margin:0 auto; padding:40px 20px 64px; }
 
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-  }
+  header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;
+    border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:28px; }
+  .eyebrow { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin:0 0 8px; }
+  h1 { font-family:'Fraunces',serif; font-weight:600; font-size:clamp(26px,5vw,38px); line-height:1.15; margin:0 0 6px; }
+  .subtitle { color:var(--muted); font-size:14px; margin:0; }
+  .top-links { display:flex; gap:10px; flex-wrap:wrap; }
+  .top-links a { font-size:12.5px; font-weight:600; color:var(--muted); text-decoration:none; border:1px solid var(--line); padding:7px 12px; border-radius:8px; }
+  .top-links a:hover { border-color:var(--gold); color:var(--ink); }
 
-  .wrap {
-    max-width: 1040px;
-    margin: 0 auto;
-    padding: 40px 20px 64px;
-  }
-
-  /* ---------- Header ---------- */
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 16px;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 24px;
-    margin-bottom: 28px;
-  }
-
-  .eyebrow {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin: 0 0 8px;
-  }
-
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: clamp(26px, 5vw, 38px);
-    line-height: 1.15;
-    margin: 0 0 6px;
-  }
-
-  .subtitle { color: var(--muted); font-size: 14px; margin: 0; }
-
-  .top-links { display: flex; gap: 10px; flex-wrap: wrap; }
-  .top-links a {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--muted);
-    text-decoration: none;
-    border: 1px solid var(--line);
-    padding: 7px 12px;
-    border-radius: 8px;
-  }
-  .top-links a:hover { border-color: var(--gold); color: var(--ink); }
-
-  /* ---------- Auth panel ---------- */
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 22px 22px;
-    margin-bottom: 32px;
-  }
-
-  .panel h2 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 0 0 14px; }
-
-  .account-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .account-info { font-size: 14px; }
-  .account-info b { font-weight: 600; }
-  .account-info .role {
-    display: inline-block;
-    margin-left: 8px;
-    padding: 2px 9px;
-    border-radius: 999px;
-    background: var(--gold-soft);
-    color: var(--gold);
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
-
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:32px; }
+  .panel h2 { font-family:'Fraunces',serif; font-size:18px; font-weight:600; margin:0 0 14px; }
+  .account-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .account-info { font-size:14px; }
+  .account-info b { font-weight:600; }
+  .account-info .role { display:inline-block; margin-left:8px; padding:2px 9px; border-radius:999px; background:var(--gold-soft); color:var(--gold); font-size:11px; font-weight:600; }
+  .form-row { display:flex; gap:10px; flex-wrap:wrap; }
   input[type="text"], input[type="password"] {
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    padding: 10px 12px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--paper);
-    color: var(--ink);
-    flex: 1;
-    min-width: 130px;
-    width: 100%;
+    font-family:'Inter',sans-serif; font-size:14px; padding:10px 12px; border:1px solid var(--line); border-radius:8px;
+    background:var(--paper); color:var(--ink); flex:1; min-width:130px; width:100%;
   }
-  input:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+  input:focus-visible { outline:2px solid var(--gold); outline-offset:1px; }
 
-  .btn {
-    font-family: 'Inter', sans-serif;
-    font-size: 13.5px;
-    font-weight: 600;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 10px 18px;
-    cursor: pointer;
-    background: var(--panel);
-    color: var(--ink);
-    white-space: nowrap;
-    transition: border-color 0.15s ease, background 0.15s ease;
+  .btn { font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600; border:1px solid var(--line); border-radius:8px;
+    padding:10px 18px; cursor:pointer; background:var(--panel); color:var(--ink); white-space:nowrap;
+    transition:border-color .15s ease, background .15s ease; }
+  .btn:hover { border-color:var(--gold); }
+  .btn:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+  .btn.primary { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .btn.primary:hover { background:#101c27; }
+  .btn.ghost { background:transparent; }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+
+  .toggle-link { font-size:13px; color:var(--muted); text-decoration:underline; cursor:pointer; background:none; border:none; padding:0; margin-top:10px; }
+  .msg { margin-top:12px; font-size:13px; padding:9px 12px; border-radius:8px; }
+  .msg.error { background:var(--danger-soft); color:var(--danger); }
+  .msg.success { background:var(--ok-soft); color:var(--ok); }
+
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:36px; }
+  .stat { background:var(--panel); padding:18px 16px; }
+  .stat .num { font-family:'Fraunces',serif; font-size:clamp(24px,5vw,34px); font-weight:600; line-height:1; }
+  .stat .label { margin-top:6px; font-size:12px; color:var(--muted); }
+  .stat.ok .num { color:var(--ok); }
+  .stat.danger .num { color:var(--danger); }
+
+  .section-label { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .section-label span { font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+  .section-label .rule { height:1px; background:var(--line); width:100%; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:14px; margin-bottom:40px; }
+  .locker { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px 16px 16px; transition:transform .15s ease, box-shadow .15s ease; }
+  .locker::before { content:""; position:absolute; left:16px; right:16px; top:48px; height:1px; background:var(--line); }
+  .locker:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(28,43,57,.07); }
+  .locker .dot { position:absolute; top:16px; right:16px; width:10px; height:10px; border-radius:50%; }
+  .locker.available .dot { background:var(--ok); }
+  .locker.unavailable .dot { background:var(--danger); }
+  .locker.maintenance .dot { background:var(--grey); }
+  .locker .number { font-family:'Fraunces',serif; font-size:24px; font-weight:600; }
+  .locker .size-tag { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .locker .location { margin-top:6px; font-size:11.5px; color:var(--muted); line-height:1.4; min-height:30px; }
+  .locker .price { margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:var(--gold); }
+  .locker .pill { display:inline-block; margin-top:6px; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; }
+  .locker.available .pill { background:var(--ok-soft); color:var(--ok); }
+  .locker.unavailable .pill { background:var(--danger-soft); color:var(--danger); }
+  .locker.maintenance .pill { background:var(--grey-soft); color:var(--grey); }
+  .locker .btn { margin-top:10px; width:100%; padding:8px 10px; font-size:12px; }
+
+  .booking { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+  .booking.overdue { border-color:var(--danger); background:var(--danger-soft); }
+  .booking .info { font-size:13px; }
+  .booking .info b { font-family:'Fraunces',serif; font-size:16px; font-weight:600; }
+  .booking .pin-tag { font-family:'IBM Plex Mono',monospace; background:var(--gold-soft); color:var(--gold); padding:2px 8px; border-radius:6px; font-size:11.5px; margin-left:6px; }
+  .booking .fee-tag { font-family:'IBM Plex Mono',monospace; background:var(--danger); color:#fff; padding:2px 8px; border-radius:6px; font-size:11.5px; margin-left:6px; }
+  .booking .actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+  .empty { text-align:center; padding:36px 16px; color:var(--muted); font-size:13.5px; border:1px dashed var(--line); border-radius:12px; }
+  .grid .empty { grid-column:1 / -1; }
+
+  .overlay { position:fixed; inset:0; background:rgba(28,43,57,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:50; }
+  .overlay.show { display:flex; }
+  .modal { background:var(--panel); border-radius:14px; padding:24px; max-width:380px; width:100%; }
+  .modal h3 { font-family:'Fraunces',serif; font-size:19px; margin:0 0 6px; }
+  .modal p { font-size:13px; color:var(--muted); margin:0 0 16px; }
+  .modal .modal-actions { display:flex; gap:10px; margin-top:16px; }
+  .modal .modal-actions .btn { flex:1; }
+  .modal .info-row { display:flex; justify-content:space-between; font-size:13px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .modal .info-row:last-child { border-bottom:none; }
+  .modal .info-row.total b { color:var(--gold); font-size:16px; }
+
+  footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:32px; }
+  .updated { font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); }
+
+  @media (max-width:640px) {
+    .wrap { padding:28px 16px 48px; }
+    header { flex-direction:column; align-items:flex-start; }
+    .stats { grid-template-columns:1fr; }
+    .form-row input { min-width:100%; }
+    .account-row { flex-direction:column; align-items:flex-start; }
+    .booking { flex-direction:column; align-items:flex-start; }
+    .booking .actions { width:100%; }
+    .booking .actions .btn { flex:1; }
+    footer { flex-direction:column; align-items:flex-start; }
   }
-  .btn:hover { border-color: var(--gold); }
-  .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .btn.primary:hover { background: #101c27; }
-  .btn.ghost { background: transparent; }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-  .toggle-link {
-    font-size: 13px;
-    color: var(--muted);
-    text-decoration: underline;
-    cursor: pointer;
-    background: none;
-    border: none;
-    padding: 0;
-    margin-top: 10px;
-  }
-
-  .msg { margin-top: 12px; font-size: 13px; padding: 9px 12px; border-radius: 8px; }
-  .msg.error { background: var(--danger-soft); color: var(--danger); }
-  .msg.success { background: var(--ok-soft); color: var(--ok); }
-
-  /* ---------- Stats ---------- */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--line);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 36px;
-  }
-  .stat { background: var(--panel); padding: 18px 16px; }
-  .stat .num { font-family: 'Fraunces', serif; font-size: clamp(24px, 5vw, 34px); font-weight: 600; line-height: 1; }
-  .stat .label { margin-top: 6px; font-size: 12px; color: var(--muted); }
-  .stat.ok .num { color: var(--ok); }
-  .stat.danger .num { color: var(--danger); }
-
-  /* ---------- Section label ---------- */
-  .section-label { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .section-label span {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11.5px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .section-label .rule { height: 1px; background: var(--line); width: 100%; }
-
-  /* ---------- Locker grid ---------- */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 14px;
-    margin-bottom: 40px;
-  }
-
-  .locker {
-    position: relative;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 18px 16px 16px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-  .locker::before {
-    content: "";
-    position: absolute;
-    left: 16px; right: 16px; top: 48px;
-    height: 1px;
-    background: var(--line);
-  }
-  .locker:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(28,43,57,0.07); }
-
-  .locker .dot { position: absolute; top: 16px; right: 16px; width: 10px; height: 10px; border-radius: 50%; }
-  .locker.available .dot { background: var(--ok); }
-  .locker.unavailable .dot { background: var(--danger); }
-  .locker.maintenance .dot { background: var(--grey); }
-
-  .locker .number { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; }
-  .locker .location { margin-top: 22px; font-size: 11.5px; color: var(--muted); line-height: 1.4; min-height: 30px; }
-
-  .locker .pill { display: inline-block; margin-top: 8px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-  .locker.available .pill { background: var(--ok-soft); color: var(--ok); }
-  .locker.unavailable .pill { background: var(--danger-soft); color: var(--danger); }
-  .locker.maintenance .pill { background: var(--grey-soft); color: var(--grey); }
-
-  .locker .btn { margin-top: 10px; width: 100%; padding: 8px 10px; font-size: 12px; }
-
-  /* ---------- Booking list ---------- */
-  .booking {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 14px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .booking .info { font-size: 13px; }
-  .booking .info b { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; }
-  .booking .pin-tag {
-    font-family: 'IBM Plex Mono', monospace;
-    background: var(--gold-soft);
-    color: var(--gold);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11.5px;
-    margin-left: 6px;
-  }
-  .booking .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .empty {
-    text-align: center; padding: 36px 16px; color: var(--muted); font-size: 13.5px;
-    border: 1px dashed var(--line); border-radius: 12px;
-  }
-  .grid .empty { grid-column: 1 / -1; }
-
-  /* ---------- Modal ---------- */
-  .overlay {
-    position: fixed; inset: 0;
-    background: rgba(28,43,57,0.45);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    z-index: 50;
-  }
-  .overlay.show { display: flex; }
-  .modal { background: var(--panel); border-radius: 14px; padding: 24px; max-width: 360px; width: 100%; }
-  .modal h3 { font-family: 'Fraunces', serif; font-size: 19px; margin: 0 0 6px; }
-  .modal p { font-size: 13px; color: var(--muted); margin: 0 0 16px; }
-  .modal .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-  .modal .modal-actions .btn { flex: 1; }
-
-  /* ---------- Footer ---------- */
-  footer {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 12px; margin-top: 32px;
-  }
-  .updated { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); }
-
-  /* ---------- Responsive breakpoints ---------- */
-  @media (max-width: 640px) {
-    .wrap { padding: 28px 16px 48px; }
-    header { flex-direction: column; align-items: flex-start; }
-    .stats { grid-template-columns: 1fr; }
-    .form-row input { min-width: 100%; }
-    .account-row { flex-direction: column; align-items: flex-start; }
-    .booking { flex-direction: column; align-items: flex-start; }
-    .booking .actions { width: 100%; }
-    .booking .actions .btn { flex: 1; }
-    footer { flex-direction: column; align-items: flex-start; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .locker { transition: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .locker { transition:none; } }
 </style>
 </head>
 <body>
@@ -318,14 +134,10 @@
       <h1>ระบบตู้รับฝากของอัจฉริยะ</h1>
       <p class="subtitle">จุดบริการตู้ล็อกเกอร์ ตึกคณะศิลปศาสตร์ — หน้าทดสอบระบบ</p>
     </div>
-    <div class="top-links">
-      <a href="/admin.html">หน้า Admin →</a>
-    </div>
+    <div class="top-links"><a href="/admin.html">หน้า Admin →</a></div>
   </header>
 
-  <!-- ============== บัญชีผู้ใช้ ============== -->
   <div class="panel" id="auth-panel">
-
     <div id="logged-out-view">
       <h2 id="auth-title">เข้าสู่ระบบเพื่อจองตู้</h2>
       <div class="form-row">
@@ -342,33 +154,25 @@
       <button class="toggle-link" id="toggle-mode">ยังไม่มีบัญชี? สมัครสมาชิก</button>
       <div id="auth-msg"></div>
     </div>
-
     <div id="logged-in-view" style="display:none;">
       <div class="account-row">
-        <div class="account-info">
-          เข้าสู่ระบบเป็น <b id="account-name">–</b>
-          <span class="role" id="account-role">user</span>
-        </div>
+        <div class="account-info">เข้าสู่ระบบเป็น <b id="account-name">–</b><span class="role" id="account-role">user</span></div>
         <button class="btn ghost" id="logout-btn">ออกจากระบบ</button>
       </div>
     </div>
-
   </div>
 
-  <!-- ============== สรุปสถานะ ============== -->
   <div class="stats">
     <div class="stat"><div class="num" id="stat-total">–</div><div class="label">ตู้ทั้งหมด</div></div>
     <div class="stat ok"><div class="num" id="stat-available">–</div><div class="label">ว่าง</div></div>
     <div class="stat danger"><div class="num" id="stat-unavailable">–</div><div class="label">ไม่ว่าง</div></div>
   </div>
 
-  <!-- ============== ผังตู้ล็อกเกอร์ ============== -->
-  <div class="section-label"><span>ผังตู้ล็อกเกอร์ — กดจองตู้ที่ว่าง</span><div class="rule"></div></div>
+  <div class="section-label"><span>ผังตู้ล็อกเกอร์ — เลือกขนาดที่ต้องการ</span><div class="rule"></div></div>
   <div class="grid" id="locker-grid">
     <div class="empty">กำลังโหลดข้อมูลตู้ล็อกเกอร์...</div>
   </div>
 
-  <!-- ============== รายการจองของฉัน ============== -->
   <div class="section-label"><span>รายการจองของฉัน</span><div class="rule"></div></div>
   <div id="my-bookings">
     <div class="empty">เข้าสู่ระบบก่อนเพื่อดูรายการจองของคุณ</div>
@@ -381,21 +185,39 @@
 
 </div>
 
-<!-- ============== Modal: แสดงรหัส PIN หลังจองสำเร็จ ============== -->
+<!-- Modal: ยืนยันจอง + ชำระเงินจำลอง -->
+<div class="overlay" id="booking-confirm-overlay">
+  <div class="modal">
+    <h3>ยืนยันการจองตู้</h3>
+    <p>ตรวจสอบรายละเอียดก่อนกดยืนยัน ระบบจะสุ่มรหัส PIN ให้หลังชำระเงินสำเร็จ</p>
+    <div class="info-row"><span>ตู้หมายเลข</span><b id="confirm-locker-number">–</b></div>
+    <div class="info-row"><span>ขนาด</span><b id="confirm-locker-size">–</b></div>
+    <div class="info-row"><span>ระยะเวลาเช่ามาตรฐาน</span><b id="confirm-duration">2 ชั่วโมง</b></div>
+    <div class="info-row total"><span>ค่าบริการ</span><b id="confirm-price">– บาท</b></div>
+    <div id="booking-confirm-msg"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="booking-confirm-cancel">ยกเลิก</button>
+      <button class="btn primary" id="booking-confirm-pay">ยืนยันจองและจ่ายเงิน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: แสดงรหัส PIN หลังจองสำเร็จ -->
 <div class="overlay" id="pin-result-overlay">
   <div class="modal">
-    <h3>จองตู้สำเร็จ</h3>
+    <h3>ชำระเงินสำเร็จ</h3>
     <p>จำรหัสนี้ไว้ให้ดี ใช้สำหรับเปิด-ปิดตู้ของคุณ</p>
-    <div style="text-align:center;">
+    <div style="text-align:center; margin-bottom:14px;">
       <span class="pin-tag" style="font-size:20px; padding:10px 20px;" id="pin-result-code">------</span>
     </div>
+    <div class="info-row"><span>ครบกำหนดคืนตู้</span><b id="pin-result-endtime">–</b></div>
     <div class="modal-actions">
       <button class="btn primary" id="pin-result-close">รับทราบ</button>
     </div>
   </div>
 </div>
 
-<!-- ============== Modal: กรอกรหัส PIN เพื่อเปิด/คืนตู้ ============== -->
+<!-- Modal: กรอกรหัส PIN เพื่อเปิด/คืนตู้ -->
 <div class="overlay" id="pin-input-overlay">
   <div class="modal">
     <h3 id="pin-input-title">กรอกรหัส PIN</h3>
@@ -409,12 +231,25 @@
   </div>
 </div>
 
+<!-- Modal: แสดงผลหลังคืนตู้ (ค่าปรับถ้ามี) -->
+<div class="overlay" id="return-result-overlay">
+  <div class="modal">
+    <h3 id="return-result-title">คืนตู้สำเร็จ</h3>
+    <p id="return-result-desc">ขอบคุณที่ใช้บริการ</p>
+    <div class="modal-actions">
+      <button class="btn primary" id="return-result-close">รับทราบ</button>
+    </div>
+  </div>
+</div>
+
 <script>
   let currentUser = JSON.parse(localStorage.getItem('locker_user') || 'null');
   let isRegisterMode = false;
-  let pendingAction = null; // { booking_id, action: 'open' | 'close' }
+  let pendingAction = null;
+  let pendingBooking = null; // { locker_id, locker_number, size, price }
 
   const el = (id) => document.getElementById(id);
+  const SIZE_LABEL = { small: 'เล็ก', medium: 'กลาง', large: 'ใหญ่' };
 
   function renderAuth() {
     if (currentUser) {
@@ -441,43 +276,23 @@
   el('submit-btn').addEventListener('click', async () => {
     const username = el('username').value.trim();
     const password = el('password').value;
-    if (!username || !password) {
-      el('auth-msg').innerHTML = '<div class="msg error">กรุณากรอก username และ password</div>';
-      return;
-    }
+    if (!username || !password) { el('auth-msg').innerHTML = '<div class="msg error">กรุณากรอก username และ password</div>'; return; }
 
     if (isRegisterMode) {
       const firstname = el('firstname').value.trim();
       const lastname = el('lastname').value.trim();
-      if (!firstname || !lastname) {
-        el('auth-msg').innerHTML = '<div class="msg error">กรุณากรอกชื่อ-นามสกุล</div>';
-        return;
-      }
-      const res = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, firstname, lastname }),
-      });
+      if (!firstname || !lastname) { el('auth-msg').innerHTML = '<div class="msg error">กรุณากรอกชื่อ-นามสกุล</div>'; return; }
+      const res = await fetch('/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username, password, firstname, lastname }) });
       const json = await res.json();
-      if (!json.success) {
-        el('auth-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
-        return;
-      }
+      if (!json.success) { el('auth-msg').innerHTML = `<div class="msg error">${json.message}</div>`; return; }
       el('auth-msg').innerHTML = '<div class="msg success">สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ</div>';
       el('toggle-mode').click();
       return;
     }
 
-    const res = await fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    const res = await fetch('/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username, password }) });
     const json = await res.json();
-    if (!json.success) {
-      el('auth-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
-      return;
-    }
+    if (!json.success) { el('auth-msg').innerHTML = `<div class="msg error">${json.message}</div>`; return; }
 
     currentUser = json;
     localStorage.setItem('locker_user', JSON.stringify(currentUser));
@@ -492,7 +307,7 @@
     renderAuth();
   });
 
-  const STATUS_LABEL = { available: 'ว่าง', unavailable: 'ไม่ว่าง', maintenance: 'ซ่อมบำรุง' };
+  const STATUS_LABEL = { available:'ว่าง', unavailable:'ไม่ว่าง', maintenance:'ซ่อมบำรุง' };
 
   async function loadLockers() {
     try {
@@ -508,10 +323,12 @@
           <div class="locker ${l.status}">
             <span class="dot"></span>
             <div class="number">${l.locker_number}</div>
+            <div class="size-tag">ขนาด${SIZE_LABEL[l.size] || l.size}</div>
             <div class="location">${l.location}</div>
+            <div class="price">${l.price} บาท / 2 ชม.</div>
             <span class="pill">${STATUS_LABEL[l.status] || l.status}</span>
             ${l.status === 'available'
-              ? `<button class="btn primary" onclick="bookLocker(${l.locker_id})" ${currentUser ? '' : 'disabled'}>
+              ? `<button class="btn primary" onclick='openBookingConfirm(${JSON.stringify({locker_id:l.locker_id, locker_number:l.locker_number, size:l.size, price:l.price})})' ${currentUser ? '' : 'disabled'}>
                    ${currentUser ? 'จองตู้นี้' : 'เข้าสู่ระบบก่อน'}
                  </button>`
               : l.status === 'maintenance'
@@ -530,24 +347,42 @@
     }
   }
 
-  async function bookLocker(locker_id) {
+  // ---------------- จองตู้: ยืนยัน + จำลองจ่ายเงิน ----------------
+  function openBookingConfirm(locker) {
     if (!currentUser) return;
+    pendingBooking = locker;
+    el('confirm-locker-number').textContent = locker.locker_number;
+    el('confirm-locker-size').textContent = SIZE_LABEL[locker.size] || locker.size;
+    el('confirm-price').textContent = locker.price + ' บาท';
+    el('booking-confirm-msg').innerHTML = '';
+    el('booking-confirm-overlay').classList.add('show');
+  }
+  window.openBookingConfirm = openBookingConfirm;
+
+  el('booking-confirm-cancel').addEventListener('click', () => {
+    el('booking-confirm-overlay').classList.remove('show');
+    pendingBooking = null;
+  });
+
+  el('booking-confirm-pay').addEventListener('click', async () => {
+    if (!pendingBooking) return;
     const res = await fetch('/booking', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: currentUser.user_id, locker_id }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: currentUser.user_id, locker_id: pendingBooking.locker_id }),
     });
     const json = await res.json();
     if (!json.success) {
-      alert(json.message);
+      el('booking-confirm-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
       return;
     }
+
+    el('booking-confirm-overlay').classList.remove('show');
     el('pin-result-code').textContent = json.pin_code;
+    el('pin-result-endtime').textContent = new Date(json.end_time.replace(' ', 'T')).toLocaleString('th-TH');
     el('pin-result-overlay').classList.add('show');
     loadLockers();
     loadMyBookings();
-  }
-  window.bookLocker = bookLocker;
+  });
 
   el('pin-result-close').addEventListener('click', () => {
     el('pin-result-overlay').classList.remove('show');
@@ -576,12 +411,16 @@
     }
 
     box.innerHTML = bookings.map(b => `
-      <div class="booking">
+      <div class="booking ${b.is_overdue ? 'overdue' : ''}">
         <div class="info">
           ตู้ <b>${b.locker_number}</b>
-          <span class="pin-tag">PIN: ${b.pin_code}</span><br>
-          <span style="color:var(--muted);">${b.location}</span><br>
-          <span style="color:var(--muted); font-size:12px;">ใช้งานมาแล้ว ${formatDuration(b.created_at)}</span>
+          <span class="pin-tag">PIN: ${b.pin_code}</span>
+          ${b.is_overdue ? `<span class="fee-tag">เกินเวลา! ค่าปรับ ${b.current_fee} บาท</span>` : ''}
+          <br>
+          <span style="color:var(--muted);">${b.location} · จ่ายแล้ว ${b.price} บาท</span><br>
+          <span style="color:var(--muted); font-size:12px;">
+            ใช้งานมาแล้ว ${formatDuration(b.created_at)} · กำหนดคืน ${new Date(b.end_time.replace(' ', 'T')).toLocaleString('th-TH')}
+          </span>
         </div>
         <div class="actions">
           <button class="btn primary" onclick="openPinModal(${b.booking_id}, 'open')">ปลดล็อกตู้</button>
@@ -596,7 +435,7 @@
     el('pin-input-title').textContent = action === 'open' ? 'กรอกรหัส PIN เพื่อปลดล็อก' : 'กรอกรหัส PIN เพื่อคืนตู้';
     el('pin-input-desc').textContent = action === 'open'
       ? 'ยืนยันรหัสเพื่อเปิดตู้ฝากของ (ระบบจะบันทึก log ว่ามีการเปิดตู้)'
-      : 'ยืนยันรหัสเพื่อคืนตู้ — ตู้จะกลับเป็นสถานะว่างทันที';
+      : 'ยืนยันรหัสเพื่อคืนตู้ — ถ้าคืนช้ากว่ากำหนด ระบบจะคิดค่าปรับให้อัตโนมัติ';
     el('pin-input-value').value = '';
     el('pin-input-msg').innerHTML = '';
     el('pin-input-overlay').classList.add('show');
@@ -611,26 +450,35 @@
   el('pin-input-confirm').addEventListener('click', async () => {
     if (!pendingAction) return;
     const pin_code = el('pin-input-value').value.trim();
-    if (!pin_code) {
-      el('pin-input-msg').innerHTML = '<div class="msg error">กรุณากรอกรหัส PIN</div>';
-      return;
-    }
+    if (!pin_code) { el('pin-input-msg').innerHTML = '<div class="msg error">กรุณากรอกรหัส PIN</div>'; return; }
 
     const res = await fetch('/verify-pin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ booking_id: pendingAction.booking_id, pin_code, action: pendingAction.action }),
     });
     const json = await res.json();
-    if (!json.success) {
-      el('pin-input-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
-      return;
-    }
+    if (!json.success) { el('pin-input-msg').innerHTML = `<div class="msg error">${json.message}</div>`; return; }
 
     el('pin-input-overlay').classList.remove('show');
+    const wasClose = pendingAction.action === 'close';
     pendingAction = null;
     loadLockers();
     loadMyBookings();
+
+    if (wasClose) {
+      if (json.fee > 0) {
+        el('return-result-title').textContent = 'คืนตู้สำเร็จ (คืนช้ากว่ากำหนด)';
+        el('return-result-desc').textContent = `กรุณาชำระค่าปรับ ${json.fee} บาท ที่เคาน์เตอร์ผู้ดูแลระบบ`;
+      } else {
+        el('return-result-title').textContent = 'คืนตู้สำเร็จ';
+        el('return-result-desc').textContent = 'คืนตู้ตรงเวลา ไม่มีค่าปรับ ขอบคุณที่ใช้บริการ';
+      }
+      el('return-result-overlay').classList.add('show');
+    }
+  });
+
+  el('return-result-close').addEventListener('click', () => {
+    el('return-result-overlay').classList.remove('show');
   });
 
   el('refresh-btn').addEventListener('click', () => { loadLockers(); loadMyBookings(); });
@@ -638,7 +486,7 @@
   renderAuth();
   loadLockers();
   loadMyBookings();
-  setInterval(loadLockers, 5000);
+  setInterval(() => { loadLockers(); loadMyBookings(); }, 5000);
 </script>
 
 </body>
