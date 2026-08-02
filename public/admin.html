@@ -8,160 +8,96 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink:        #1c2b39;
-    --paper:      #f6f4ef;
-    --panel:      #ffffff;
-    --gold:       #b98b2e;
-    --gold-soft:  #f1e4c8;
-    --ok:         #2f9e58;
-    --ok-soft:    #e3f3e8;
-    --danger:     #c0453b;
-    --danger-soft:#faeaea;
-    --warn:       #b9832e;
-    --warn-soft:  #f6ecdb;
-    --line:       #e4dfd4;
-    --muted:      #767066;
+    --ink:#1c2b39; --paper:#f6f4ef; --panel:#ffffff;
+    --gold:#b98b2e; --gold-soft:#f1e4c8;
+    --ok:#2f9e58; --ok-soft:#e3f3e8;
+    --danger:#c0453b; --danger-soft:#faeaea;
+    --warn:#b9832e; --warn-soft:#f6ecdb;
+    --grey:#6b7280; --grey-soft:#eceef0;
+    --line:#e4dfd4; --muted:#767066;
   }
-
   * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh; }
+  .wrap { max-width:1040px; margin:0 auto; padding:40px 20px 64px; }
 
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
+  header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;
+    border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:28px; }
+  .eyebrow { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin:0 0 8px; }
+  h1 { font-family:'Fraunces',serif; font-weight:600; font-size:clamp(24px,5vw,34px); margin:0 0 6px; }
+  .subtitle { color:var(--muted); font-size:14px; margin:0; }
+  .top-links a { font-size:12.5px; font-weight:600; color:var(--muted); text-decoration:none; border:1px solid var(--line); padding:7px 12px; border-radius:8px; }
+  .top-links a:hover { border-color:var(--gold); color:var(--ink); }
+
+  .guard-panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:40px 24px; text-align:center; }
+  .guard-panel h2 { font-family:'Fraunces',serif; margin:0 0 8px; }
+  .guard-panel p { color:var(--muted); font-size:14px; margin:0 0 20px; }
+
+  .btn { font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600; border:1px solid var(--line); border-radius:8px;
+    padding:9px 16px; cursor:pointer; background:var(--panel); color:var(--ink); text-decoration:none; display:inline-block; }
+  .btn.primary { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .btn.danger { color:var(--danger); border-color:var(--danger-soft); }
+  .btn.danger:hover { background:var(--danger-soft); }
+  .btn.ok { color:var(--ok); border-color:var(--ok-soft); }
+  .btn.ok:hover { background:var(--ok-soft); }
+  .btn:hover { border-color:var(--gold); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line);
+    border-radius:14px; overflow:hidden; margin-bottom:32px; }
+  .stat { background:var(--panel); padding:16px 14px; }
+  .stat .num { font-family:'Fraunces',serif; font-size:clamp(20px,4vw,28px); font-weight:600; line-height:1; }
+  .stat .label { margin-top:6px; font-size:11.5px; color:var(--muted); }
+  .stat.ok .num { color:var(--ok); }
+  .stat.danger .num { color:var(--danger); }
+  .stat.grey .num { color:var(--grey); }
+
+  /* ---------- Tabs ---------- */
+  .tabs { display:flex; gap:6px; margin-bottom:22px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .tab-btn {
+    font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600; color:var(--muted);
+    background:none; border:none; padding:10px 16px; cursor:pointer; border-bottom:2px solid transparent;
   }
+  .tab-btn.active { color:var(--ink); border-bottom-color:var(--gold); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
 
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 64px; }
+  .section-label { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .section-label span { font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+  .section-label .rule { height:1px; background:var(--line); width:100%; }
 
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 16px;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 24px;
-    margin-bottom: 28px;
-  }
+  .filter-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  select, input[type="text"] { font-family:'Inter',sans-serif; font-size:13.5px; padding:9px 12px; border:1px solid var(--line);
+    border-radius:8px; background:var(--panel); color:var(--ink); }
 
-  .eyebrow {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin: 0 0 8px;
-  }
+  .table-wrap { background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow-x:auto; margin-bottom:32px; }
+  table { width:100%; border-collapse:collapse; min-width:560px; }
+  thead th { text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);
+    padding:14px 16px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tbody td { padding:13px 16px; font-size:13.5px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--paper); }
 
-  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(24px, 5vw, 34px); margin: 0 0 6px; }
-  .subtitle { color: var(--muted); font-size: 14px; margin: 0; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11.5px; font-weight:600; }
+  .badge.open { background:var(--ok-soft); color:var(--ok); }
+  .badge.close { background:var(--danger-soft); color:var(--danger); }
+  .badge.wrong_pin { background:var(--warn-soft); color:var(--warn); }
+  .badge.book { background:var(--gold-soft); color:var(--gold); }
+  .badge.available { background:var(--ok-soft); color:var(--ok); }
+  .badge.unavailable { background:var(--danger-soft); color:var(--danger); }
+  .badge.maintenance { background:var(--grey-soft); color:var(--grey); }
+  .badge.active { background:var(--ok-soft); color:var(--ok); }
+  .badge.suspended { background:var(--danger-soft); color:var(--danger); }
+  .badge.admin { background:var(--gold-soft); color:var(--gold); }
+  .badge.user { background:var(--grey-soft); color:var(--grey); }
 
-  .top-links a {
-    font-size: 12.5px; font-weight: 600; color: var(--muted); text-decoration: none;
-    border: 1px solid var(--line); padding: 7px 12px; border-radius: 8px;
-  }
-  .top-links a:hover { border-color: var(--gold); color: var(--ink); }
+  .empty { text-align:center; padding:40px 16px; color:var(--muted); font-size:13.5px; }
+  footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  .updated { font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); }
 
-  .guard-panel {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 40px 24px;
-    text-align: center;
-  }
-  .guard-panel h2 { font-family: 'Fraunces', serif; margin: 0 0 8px; }
-  .guard-panel p { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
-
-  .btn {
-    font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
-    border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px;
-    cursor: pointer; background: var(--panel); color: var(--ink);
-    text-decoration: none; display: inline-block;
-  }
-  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .btn:hover { border-color: var(--gold); }
-
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--line);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 32px;
-  }
-  .stat { background: var(--panel); padding: 18px 16px; }
-  .stat .num { font-family: 'Fraunces', serif; font-size: clamp(22px, 5vw, 30px); font-weight: 600; line-height: 1; }
-  .stat .label { margin-top: 6px; font-size: 12px; color: var(--muted); }
-  .stat.ok .num { color: var(--ok); }
-  .stat.danger .num { color: var(--danger); }
-
-  .section-label { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .section-label span {
-    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted); white-space: nowrap;
-  }
-  .section-label .rule { height: 1px; background: var(--line); width: 100%; }
-
-  .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-  select, input[type="text"] {
-    font-family: 'Inter', sans-serif; font-size: 13.5px; padding: 9px 12px;
-    border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink);
-  }
-
-  .table-wrap {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    overflow-x: auto;
-    margin-bottom: 32px;
-  }
-  table { width: 100%; border-collapse: collapse; min-width: 560px; }
-  thead th {
-    text-align: left;
-    font-size: 11.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--line);
-    white-space: nowrap;
-  }
-  tbody td {
-    padding: 13px 16px;
-    font-size: 13.5px;
-    border-bottom: 1px solid var(--line);
-    white-space: nowrap;
-  }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: var(--paper); }
-
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 11.5px;
-    font-weight: 600;
-  }
-  .badge.open { background: var(--ok-soft); color: var(--ok); }
-  .badge.close { background: var(--danger-soft); color: var(--danger); }
-  .badge.wrong_pin { background: var(--warn-soft); color: var(--warn); }
-  .badge.book { background: var(--gold-soft); color: var(--gold); }
-
-  .empty {
-    text-align: center; padding: 40px 16px; color: var(--muted); font-size: 13.5px;
-  }
-
-  footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-  .updated { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); }
-
-  @media (max-width: 640px) {
-    .wrap { padding: 28px 16px 48px; }
-    header { flex-direction: column; align-items: flex-start; }
-    .stats { grid-template-columns: 1fr; }
+  @media (max-width:640px) {
+    .wrap { padding:28px 16px 48px; }
+    header { flex-direction:column; align-items:flex-start; }
+    .stats { grid-template-columns:1fr 1fr; }
   }
 </style>
 </head>
@@ -173,7 +109,7 @@
     <div>
       <p class="eyebrow">Prince of Songkla University · Faculty of Liberal Arts</p>
       <h1>แผงควบคุมผู้ดูแลระบบ</h1>
-      <p class="subtitle">ประวัติการใช้งานตู้ล็อกเกอร์ทั้งหมด (Log Activity)</p>
+      <p class="subtitle">จัดการผู้ใช้งาน / ตู้ล็อกเกอร์ / ประวัติ / รายงานสรุป</p>
     </div>
     <div class="top-links"><a href="/">← กลับหน้าหลัก</a></div>
   </header>
@@ -190,38 +126,76 @@
       <div class="stat"><div class="num" id="stat-total">–</div><div class="label">ตู้ทั้งหมด</div></div>
       <div class="stat ok"><div class="num" id="stat-available">–</div><div class="label">ว่าง</div></div>
       <div class="stat danger"><div class="num" id="stat-unavailable">–</div><div class="label">ไม่ว่าง</div></div>
+      <div class="stat grey"><div class="num" id="stat-maintenance">–</div><div class="label">ซ่อมบำรุง</div></div>
     </div>
 
-    <div class="section-label"><span>ประวัติการใช้งาน (Log)</span><div class="rule"></div></div>
-
-    <div class="filter-row">
-      <select id="filter-action">
-        <option value="">ทุกประเภทเหตุการณ์</option>
-        <option value="book">จองตู้ (book)</option>
-        <option value="open">เปิดตู้ (open)</option>
-        <option value="close">คืนตู้ (close)</option>
-        <option value="wrong_pin">กรอก PIN ผิด (wrong_pin)</option>
-      </select>
-      <input type="text" id="filter-search" placeholder="ค้นหาชื่อผู้ใช้หรือหมายเลขตู้...">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="logs">ประวัติการใช้งาน</button>
+      <button class="tab-btn" data-tab="users">จัดการผู้ใช้งาน</button>
+      <button class="tab-btn" data-tab="lockers">จัดการตู้ล็อกเกอร์</button>
+      <button class="tab-btn" data-tab="reports">รายงานสรุป</button>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>เวลา</th>
-            <th>ตู้</th>
-            <th>ผู้ใช้งาน</th>
-            <th>เหตุการณ์</th>
-          </tr>
-        </thead>
-        <tbody id="log-tbody">
-          <tr><td colspan="4" class="empty">กำลังโหลดข้อมูล...</td></tr>
-        </tbody>
-      </table>
+    <!-- ===== แท็บ: ประวัติการใช้งาน ===== -->
+    <div class="tab-panel active" id="tab-logs">
+      <div class="filter-row">
+        <select id="filter-action">
+          <option value="">ทุกประเภทเหตุการณ์</option>
+          <option value="book">จองตู้ (book)</option>
+          <option value="open">เปิดตู้ (open)</option>
+          <option value="close">คืนตู้ (close)</option>
+          <option value="wrong_pin">กรอก PIN ผิด (wrong_pin)</option>
+        </select>
+        <input type="text" id="filter-search" placeholder="ค้นหาชื่อผู้ใช้หรือหมายเลขตู้...">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>เวลา</th><th>ตู้</th><th>ผู้ใช้งาน</th><th>เหตุการณ์</th></tr></thead>
+          <tbody id="log-tbody"><tr><td colspan="4" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+        </table>
+      </div>
     </div>
 
-    <footer>
+    <!-- ===== แท็บ: จัดการผู้ใช้งาน ===== -->
+    <div class="tab-panel" id="tab-users">
+      <div class="section-label"><span>ผู้ใช้งานทั้งหมด — ตรวจสอบ/ระงับสิทธิ์</span><div class="rule"></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ชื่อ-นามสกุล</th><th>Username</th><th>บทบาท</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+          <tbody id="users-tbody"><tr><td colspan="5" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== แท็บ: จัดการตู้ล็อกเกอร์ ===== -->
+    <div class="tab-panel" id="tab-lockers">
+      <div class="section-label"><span>ตู้ล็อกเกอร์ทั้งหมด — เปิด/ปิด/ซ่อมบำรุง</span><div class="rule"></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>หมายเลขตู้</th><th>ตำแหน่ง</th><th>สถานะปัจจุบัน</th><th>เปลี่ยนสถานะ</th></tr></thead>
+          <tbody id="lockers-tbody"><tr><td colspan="4" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== แท็บ: รายงานสรุป ===== -->
+    <div class="tab-panel" id="tab-reports">
+      <div class="section-label"><span>รายงานการใช้งาน</span><div class="rule"></div></div>
+      <div class="filter-row">
+        <select id="report-period">
+          <option value="daily">รายวัน</option>
+          <option value="monthly">รายเดือน</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th id="report-period-th">วันที่</th><th>จองตู้</th><th>เปิดตู้</th><th>คืนตู้</th><th>PIN ผิด</th><th>รวม</th></tr></thead>
+          <tbody id="reports-tbody"><tr><td colspan="6" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer style="margin-top:24px;">
       <button class="btn" id="refresh-btn">รีเฟรชตอนนี้</button>
       <span class="updated" id="updated-at">–</span>
     </footer>
@@ -234,17 +208,42 @@
   const el = (id) => document.getElementById(id);
   const currentUser = JSON.parse(localStorage.getItem('locker_user') || 'null');
 
-  const ACTION_LABEL = { book: 'จองตู้', open: 'ปลดล็อกตู้', close: 'คืนตู้ (ว่าง)', wrong_pin: 'กรอก PIN ผิด' };
+  const ACTION_LABEL = { book:'จองตู้', open:'ปลดล็อกตู้', close:'คืนตู้ (ว่าง)', wrong_pin:'กรอก PIN ผิด' };
+  const LOCKER_STATUS_LABEL = { available:'ว่าง', unavailable:'ไม่ว่าง', maintenance:'ซ่อมบำรุง' };
+  const USER_STATUS_LABEL = { active:'ปกติ', suspended:'ถูกระงับ' };
+  const ROLE_LABEL = { admin:'Admin', user:'User' };
 
   if (!currentUser || currentUser.role !== 'admin') {
     el('guard-panel').style.display = 'block';
   } else {
     el('admin-content').style.display = 'block';
-    loadDashboard();
-    loadLogs();
-    setInterval(() => { loadDashboard(); loadLogs(); }, 5000);
+    initTabs();
+    loadAll();
+    setInterval(loadAll, 8000);
   }
 
+  function loadAll() {
+    loadDashboard();
+    loadLogs();
+    loadUsers();
+    loadLockers();
+    loadReports();
+    el('updated-at').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
+  }
+
+  // ---------------- Tabs ----------------
+  function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        el('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+  }
+
+  // ---------------- Dashboard stats ----------------
   async function loadDashboard() {
     const res = await fetch('/dashboard');
     const json = await res.json();
@@ -252,26 +251,24 @@
     el('stat-total').textContent = d.total_lockers ?? '0';
     el('stat-available').textContent = d.available_lockers ?? '0';
     el('stat-unavailable').textContent = d.in_use_lockers ?? '0';
+    el('stat-maintenance').textContent = d.maintenance_lockers ?? '0';
   }
 
+  // ---------------- Logs tab ----------------
   let allLogs = [];
-
   async function loadLogs() {
     try {
       const res = await fetch('/logs');
       const json = await res.json();
       allLogs = json.data || [];
       renderLogs();
-      el('updated-at').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
     } catch (err) {
       el('log-tbody').innerHTML = '<tr><td colspan="4" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
     }
   }
-
   function renderLogs() {
     const actionFilter = el('filter-action').value;
     const search = el('filter-search').value.trim().toLowerCase();
-
     let rows = allLogs;
     if (actionFilter) rows = rows.filter(r => r.action === actionFilter);
     if (search) {
@@ -281,12 +278,10 @@
         (r.lastname || '').toLowerCase().includes(search)
       );
     }
-
     if (rows.length === 0) {
       el('log-tbody').innerHTML = '<tr><td colspan="4" class="empty">ไม่พบข้อมูล</td></tr>';
       return;
     }
-
     el('log-tbody').innerHTML = rows.map(r => `
       <tr>
         <td>${new Date(r.timestamp).toLocaleString('th-TH')}</td>
@@ -296,10 +291,114 @@
       </tr>
     `).join('');
   }
-
   el('filter-action').addEventListener('change', renderLogs);
   el('filter-search').addEventListener('input', renderLogs);
-  el('refresh-btn')?.addEventListener('click', () => { loadDashboard(); loadLogs(); });
+
+  // ---------------- Users tab ----------------
+  async function loadUsers() {
+    try {
+      const res = await fetch('/users');
+      const json = await res.json();
+      const users = json.data || [];
+      if (users.length === 0) {
+        el('users-tbody').innerHTML = '<tr><td colspan="5" class="empty">ยังไม่มีผู้ใช้งาน</td></tr>';
+        return;
+      }
+      el('users-tbody').innerHTML = users.map(u => `
+        <tr>
+          <td>${u.firstname} ${u.lastname}</td>
+          <td>${u.username}</td>
+          <td><span class="badge ${u.role}">${ROLE_LABEL[u.role] || u.role}</span></td>
+          <td><span class="badge ${u.status}">${USER_STATUS_LABEL[u.status] || u.status}</span></td>
+          <td>
+            ${u.status === 'active'
+              ? `<button class="btn danger" onclick="toggleUserStatus(${u.user_id}, 'suspended')">ระงับสิทธิ์</button>`
+              : `<button class="btn ok" onclick="toggleUserStatus(${u.user_id}, 'active')">คืนสิทธิ์</button>`}
+          </td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      el('users-tbody').innerHTML = '<tr><td colspan="5" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
+    }
+  }
+  async function toggleUserStatus(user_id, status) {
+    await fetch(`/users/${user_id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    loadUsers();
+  }
+  window.toggleUserStatus = toggleUserStatus;
+
+  // ---------------- Lockers tab ----------------
+  async function loadLockers() {
+    try {
+      const res = await fetch('/lockers');
+      const json = await res.json();
+      const lockers = json.data || [];
+      if (lockers.length === 0) {
+        el('lockers-tbody').innerHTML = '<tr><td colspan="4" class="empty">ยังไม่มีตู้ล็อกเกอร์</td></tr>';
+        return;
+      }
+      el('lockers-tbody').innerHTML = lockers.map(l => `
+        <tr>
+          <td>${l.locker_number}</td>
+          <td>${l.location}</td>
+          <td><span class="badge ${l.status}">${LOCKER_STATUS_LABEL[l.status] || l.status}</span></td>
+          <td>
+            <select onchange="changeLockerStatus(${l.locker_id}, this.value)">
+              <option value="available" ${l.status==='available'?'selected':''}>ว่าง</option>
+              <option value="unavailable" ${l.status==='unavailable'?'selected':''}>ไม่ว่าง</option>
+              <option value="maintenance" ${l.status==='maintenance'?'selected':''}>ซ่อมบำรุง</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      el('lockers-tbody').innerHTML = '<tr><td colspan="4" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
+    }
+  }
+  async function changeLockerStatus(locker_id, status) {
+    await fetch(`/lockers/${locker_id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    loadLockers();
+    loadDashboard();
+  }
+  window.changeLockerStatus = changeLockerStatus;
+
+  // ---------------- Reports tab ----------------
+  async function loadReports() {
+    const period = el('report-period').value;
+    el('report-period-th').textContent = period === 'monthly' ? 'เดือน' : 'วันที่';
+    try {
+      const res = await fetch('/reports?period=' + period);
+      const json = await res.json();
+      const rows = json.data || [];
+      if (rows.length === 0) {
+        el('reports-tbody').innerHTML = '<tr><td colspan="6" class="empty">ยังไม่มีข้อมูล</td></tr>';
+        return;
+      }
+      el('reports-tbody').innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.period_label}</td>
+          <td>${r.bookings}</td>
+          <td>${r.opens}</td>
+          <td>${r.closes}</td>
+          <td>${r.wrong_pins}</td>
+          <td><b>${r.total_events}</b></td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      el('reports-tbody').innerHTML = '<tr><td colspan="6" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
+    }
+  }
+  el('report-period').addEventListener('change', loadReports);
+
+  el('refresh-btn')?.addEventListener('click', loadAll);
 </script>
 
 </body>
