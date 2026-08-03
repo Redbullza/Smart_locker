@@ -366,22 +366,43 @@
 
   el('booking-confirm-pay').addEventListener('click', async () => {
     if (!pendingBooking) return;
-    const res = await fetch('/booking', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: currentUser.user_id, locker_id: pendingBooking.locker_id }),
-    });
-    const json = await res.json();
-    if (!json.success) {
-      el('booking-confirm-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
-      return;
-    }
+    const payBtn = el('booking-confirm-pay');
+    payBtn.disabled = true;
+    payBtn.textContent = 'กำลังดำเนินการ...';
+    el('booking-confirm-msg').innerHTML = '';
 
-    el('booking-confirm-overlay').classList.remove('show');
-    el('pin-result-code').textContent = json.pin_code;
-    el('pin-result-endtime').textContent = new Date(json.end_time.replace(' ', 'T')).toLocaleString('th-TH');
-    el('pin-result-overlay').classList.add('show');
-    loadLockers();
-    loadMyBookings();
+    try {
+      const res = await fetch('/booking', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: currentUser.user_id, locker_id: pendingBooking.locker_id }),
+      });
+
+      if (!res.ok) {
+        // เซิร์ฟเวอร์ตอบกลับเป็น error (เช่น 500) — อ่านเป็นข้อความธรรมดาแทน เพราะอาจไม่ใช่ JSON
+        const text = await res.text();
+        throw new Error(`เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ${res.status}): ${text.slice(0, 200)}`);
+      }
+
+      const json = await res.json();
+      if (!json.success) {
+        el('booking-confirm-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
+        return;
+      }
+
+      el('booking-confirm-overlay').classList.remove('show');
+      el('pin-result-code').textContent = json.pin_code;
+      el('pin-result-endtime').textContent = new Date(json.end_time.replace(' ', 'T')).toLocaleString('th-TH');
+      el('pin-result-overlay').classList.add('show');
+      loadLockers();
+      loadMyBookings();
+    } catch (err) {
+      // แสดง error จริงให้เห็น แทนที่จะค้างเงียบ ๆ โดยไม่มีข้อความ
+      el('booking-confirm-msg').innerHTML = `<div class="msg error">เกิดข้อผิดพลาด: ${err.message}<br>ตรวจสอบว่ารัน migration.sql ครบแล้วหรือยัง (ต้องมีตาราง pricing และ settings)</div>`;
+      console.error('Booking error:', err);
+    } finally {
+      payBtn.disabled = false;
+      payBtn.textContent = 'ยืนยันจองและจ่ายเงิน';
+    }
   });
 
   el('pin-result-close').addEventListener('click', () => {
@@ -452,28 +473,46 @@
     const pin_code = el('pin-input-value').value.trim();
     if (!pin_code) { el('pin-input-msg').innerHTML = '<div class="msg error">กรุณากรอกรหัส PIN</div>'; return; }
 
-    const res = await fetch('/verify-pin', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ booking_id: pendingAction.booking_id, pin_code, action: pendingAction.action }),
-    });
-    const json = await res.json();
-    if (!json.success) { el('pin-input-msg').innerHTML = `<div class="msg error">${json.message}</div>`; return; }
+    const confirmBtn = el('pin-input-confirm');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'กำลังดำเนินการ...';
 
-    el('pin-input-overlay').classList.remove('show');
-    const wasClose = pendingAction.action === 'close';
-    pendingAction = null;
-    loadLockers();
-    loadMyBookings();
+    try {
+      const res = await fetch('/verify-pin', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: pendingAction.booking_id, pin_code, action: pendingAction.action }),
+      });
 
-    if (wasClose) {
-      if (json.fee > 0) {
-        el('return-result-title').textContent = 'คืนตู้สำเร็จ (คืนช้ากว่ากำหนด)';
-        el('return-result-desc').textContent = `กรุณาชำระค่าปรับ ${json.fee} บาท ที่เคาน์เตอร์ผู้ดูแลระบบ`;
-      } else {
-        el('return-result-title').textContent = 'คืนตู้สำเร็จ';
-        el('return-result-desc').textContent = 'คืนตู้ตรงเวลา ไม่มีค่าปรับ ขอบคุณที่ใช้บริการ';
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ${res.status}): ${text.slice(0, 200)}`);
       }
-      el('return-result-overlay').classList.add('show');
+
+      const json = await res.json();
+      if (!json.success) { el('pin-input-msg').innerHTML = `<div class="msg error">${json.message}</div>`; return; }
+
+      el('pin-input-overlay').classList.remove('show');
+      const wasClose = pendingAction.action === 'close';
+      pendingAction = null;
+      loadLockers();
+      loadMyBookings();
+
+      if (wasClose) {
+        if (json.fee > 0) {
+          el('return-result-title').textContent = 'คืนตู้สำเร็จ (คืนช้ากว่ากำหนด)';
+          el('return-result-desc').textContent = `กรุณาชำระค่าปรับ ${json.fee} บาท ที่เคาน์เตอร์ผู้ดูแลระบบ`;
+        } else {
+          el('return-result-title').textContent = 'คืนตู้สำเร็จ';
+          el('return-result-desc').textContent = 'คืนตู้ตรงเวลา ไม่มีค่าปรับ ขอบคุณที่ใช้บริการ';
+        }
+        el('return-result-overlay').classList.add('show');
+      }
+    } catch (err) {
+      el('pin-input-msg').innerHTML = `<div class="msg error">เกิดข้อผิดพลาด: ${err.message}</div>`;
+      console.error('Verify-pin error:', err);
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'ยืนยัน';
     }
   });
 
