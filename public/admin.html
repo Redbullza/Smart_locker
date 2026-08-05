@@ -18,7 +18,7 @@
   }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh; }
-  .wrap { max-width:1120px; margin:0 auto; padding:40px 20px 64px; }
+  .wrap { max-width:1080px; margin:0 auto; padding:40px 20px 64px; }
 
   header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;
     border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:28px; }
@@ -66,17 +66,16 @@
   .section-label .rule { height:1px; background:var(--line); width:100%; }
 
   .filter-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
-  select, input[type="text"], input[type="number"] { font-family:'Inter',sans-serif; font-size:13.5px; padding:9px 12px; border:1px solid var(--line);
+  select, input[type="text"] { font-family:'Inter',sans-serif; font-size:13.5px; padding:9px 12px; border:1px solid var(--line);
     border-radius:8px; background:var(--panel); color:var(--ink); }
 
   .table-wrap { background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow-x:auto; margin-bottom:32px; }
-  table { width:100%; border-collapse:collapse; min-width:600px; }
+  table { width:100%; border-collapse:collapse; min-width:560px; }
   thead th { text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);
     padding:14px 16px; border-bottom:1px solid var(--line); white-space:nowrap; }
   tbody td { padding:13px 16px; font-size:13.5px; border-bottom:1px solid var(--line); white-space:nowrap; }
   tbody tr:last-child td { border-bottom:none; }
   tbody tr:hover { background:var(--paper); }
-  tbody tr.overdue-row { background:var(--danger-soft); }
 
   .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11.5px; font-weight:600; }
   .badge.open { background:var(--ok-soft); color:var(--ok); }
@@ -84,7 +83,6 @@
   .badge.wrong_pin { background:var(--warn-soft); color:var(--warn); }
   .badge.book { background:var(--gold-soft); color:var(--gold); }
   .badge.payment { background:var(--ok-soft); color:var(--ok); }
-  .badge.emergency_open { background:var(--warn-soft); color:var(--warn); }
   .badge.admin_release { background:var(--grey-soft); color:var(--grey); }
   .badge.available { background:var(--ok-soft); color:var(--ok); }
   .badge.unavailable { background:var(--danger-soft); color:var(--danger); }
@@ -97,13 +95,7 @@
   .badge.user { background:var(--grey-soft); color:var(--grey); }
   .badge.paid { background:var(--ok-soft); color:var(--ok); }
   .badge.unpaid { background:var(--danger-soft); color:var(--danger); }
-  .fee-amount { font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--danger); }
   .revenue-amount { font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--ok); }
-
-  .price-card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
-  .price-card .name { font-family:'Fraunces',serif; font-size:17px; font-weight:600; }
-  .price-card .edit-row { display:flex; gap:8px; align-items:center; }
-  .price-card input[type="number"] { width:100px; }
 
   .empty { text-align:center; padding:40px 16px; color:var(--muted); font-size:13.5px; }
   footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
@@ -124,7 +116,7 @@
     <div>
       <p class="eyebrow">Prince of Songkla University · Faculty of Liberal Arts</p>
       <h1>แผงควบคุมผู้ดูแลระบบ</h1>
-      <p class="subtitle">จัดการผู้ใช้งาน / ตู้ล็อกเกอร์ / ราคา / รายงานและค่าปรับ</p>
+      <p class="subtitle">จัดการผู้ใช้งาน / ตู้ล็อกเกอร์ / ประวัติ / รายงาน — ฝากได้ไม่จำกัดเวลา ไม่มีค่าปรับ</p>
     </div>
     <div class="top-links"><a href="/">← กลับหน้าหลัก</a></div>
   </header>
@@ -146,11 +138,9 @@
 
     <div class="tabs">
       <button class="tab-btn active" data-tab="logs">ประวัติการใช้งาน</button>
-      <button class="tab-btn" data-tab="overdue">รายการเกินเวลา</button>
       <button class="tab-btn" data-tab="allbookings">การจองทั้งหมด</button>
       <button class="tab-btn" data-tab="users">จัดการผู้ใช้งาน</button>
       <button class="tab-btn" data-tab="lockers">จัดการตู้ล็อกเกอร์</button>
-      <button class="tab-btn" data-tab="pricing">ราคา &amp; ค่าปรับ</button>
       <button class="tab-btn" data-tab="reports">รายงานสรุป</button>
     </div>
 
@@ -164,7 +154,6 @@
           <option value="open">เปิดตู้</option>
           <option value="close">คืนตู้</option>
           <option value="wrong_pin">กรอก PIN ผิด</option>
-          <option value="emergency_open">ปลดล็อกฉุกเฉิน</option>
           <option value="admin_release">Admin ปล่อยตู้</option>
         </select>
         <input type="text" id="filter-search" placeholder="ค้นหาชื่อผู้ใช้หรือหมายเลขตู้...">
@@ -173,17 +162,6 @@
         <table>
           <thead><tr><th>เวลา</th><th>ตู้</th><th>ผู้ใช้งาน</th><th>เหตุการณ์</th></tr></thead>
           <tbody id="log-tbody"><tr><td colspan="4" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ===== แท็บ: รายการเกินเวลา ===== -->
-    <div class="tab-panel" id="tab-overdue">
-      <div class="section-label"><span>ตู้ที่เกินกำหนดคืน ณ ตอนนี้</span><div class="rule"></div></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>ตู้</th><th>ผู้ใช้งาน</th><th>ครบกำหนดคืน</th><th>เกินเวลามาแล้ว</th><th>ค่าปรับสะสม</th><th>จัดการ</th></tr></thead>
-          <tbody id="overdue-tbody"><tr><td colspan="6" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -212,41 +190,18 @@
 
     <!-- ===== แท็บ: จัดการตู้ล็อกเกอร์ ===== -->
     <div class="tab-panel" id="tab-lockers">
-      <div class="section-label"><span>ตู้ล็อกเกอร์ทั้งหมด — เปิด/ปิด/ซ่อมบำรุง/ขนาด/ปลดล็อกฉุกเฉิน</span><div class="rule"></div></div>
+      <div class="section-label"><span>ตู้ล็อกเกอร์ทั้งหมด — เปิด/ปิด/ซ่อมบำรุง/ขนาด</span><div class="rule"></div></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>หมายเลขตู้</th><th>ตำแหน่ง</th><th>ขนาด</th><th>สถานะ</th><th>เปลี่ยนสถานะ</th><th>ฉุกเฉิน</th></tr></thead>
-          <tbody id="lockers-tbody"><tr><td colspan="6" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+          <thead><tr><th>หมายเลขตู้</th><th>ตำแหน่ง</th><th>ขนาด</th><th>สถานะ</th><th>เปลี่ยนสถานะ</th></tr></thead>
+          <tbody id="lockers-tbody"><tr><td colspan="5" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
         </table>
       </div>
     </div>
 
-    <!-- ===== แท็บ: ราคา & ค่าปรับ ===== -->
-    <div class="tab-panel" id="tab-pricing">
-      <div class="section-label"><span>ราคาตามขนาดตู้ (ต่อการจอง 1 ครั้ง = มาตรฐาน 2 ชม.)</span><div class="rule"></div></div>
-      <div id="pricing-list"><div class="empty">กำลังโหลดข้อมูล...</div></div>
-
-      <div class="section-label" style="margin-top:28px;"><span>ค่าคงที่ของระบบ</span><div class="rule"></div></div>
-      <div class="price-card">
-        <div class="name">ค่าปรับเมื่อคืนตู้ช้า (บาท/ชั่วโมง)</div>
-        <div class="edit-row">
-          <input type="number" id="setting-late-fee" min="0" step="1">
-          <button class="btn primary small" onclick="saveSetting('late_fee_per_hour')">บันทึก</button>
-        </div>
-      </div>
-      <div class="price-card">
-        <div class="name">ระยะเวลาเช่ามาตรฐาน (ชั่วโมง)</div>
-        <div class="edit-row">
-          <input type="number" id="setting-duration" min="0.5" step="0.5">
-          <button class="btn primary small" onclick="saveSetting('standard_duration_hours')">บันทึก</button>
-        </div>
-      </div>
-      <div id="settings-msg"></div>
-    </div>
-
     <!-- ===== แท็บ: รายงานสรุป ===== -->
     <div class="tab-panel" id="tab-reports">
-      <div class="section-label"><span>รายงานการใช้งาน รายได้ และอัตราการใช้ตู้</span><div class="rule"></div></div>
+      <div class="section-label"><span>รายงานการใช้งานและรายได้</span><div class="rule"></div></div>
       <div class="filter-row">
         <select id="report-period">
           <option value="daily">รายวัน</option>
@@ -259,10 +214,10 @@
           <thead>
             <tr>
               <th id="report-period-th">วันที่</th><th>จองตู้</th><th>เปิดตู้</th><th>คืนตู้</th><th>PIN ผิด</th>
-              <th>ค่าบริการ (บาท)</th><th>ค่าปรับ (บาท)</th><th>รายได้รวม (บาท)</th><th>อัตราการใช้ตู้</th>
+              <th>รวมเหตุการณ์</th><th>รายได้รวม (บาท)</th><th>อัตราการใช้ตู้</th>
             </tr>
           </thead>
-          <tbody id="reports-tbody"><tr><td colspan="9" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+          <tbody id="reports-tbody"><tr><td colspan="8" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -280,7 +235,7 @@
   const el = (id) => document.getElementById(id);
   const currentUser = JSON.parse(localStorage.getItem('locker_user') || 'null');
 
-  const ACTION_LABEL = { book:'จองตู้', payment:'ชำระเงิน', open:'ปลดล็อกตู้', close:'คืนตู้', wrong_pin:'กรอก PIN ผิด', emergency_open:'ปลดล็อกฉุกเฉิน', admin_release:'Admin ปล่อยตู้' };
+  const ACTION_LABEL = { book:'จองตู้', payment:'ชำระเงิน', open:'ปลดล็อกตู้', close:'คืนตู้', wrong_pin:'กรอก PIN ผิด', admin_release:'Admin ปล่อยตู้' };
   const LOCKER_STATUS_LABEL = { available:'ว่าง', unavailable:'ไม่ว่าง', maintenance:'ซ่อมบำรุง' };
   const USER_STATUS_LABEL = { active:'ปกติ', suspended:'ถูกระงับ' };
   const ROLE_LABEL = { admin:'Admin', user:'User' };
@@ -300,12 +255,9 @@
   function loadAll() {
     loadDashboard();
     loadLogs();
-    loadOverdue();
     loadAllBookings();
     loadUsers();
     loadLockers();
-    loadPricing();
-    loadSettings();
     loadReports();
     el('updated-at').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
   }
@@ -368,34 +320,6 @@
   el('filter-action').addEventListener('change', renderLogs);
   el('filter-search').addEventListener('input', renderLogs);
 
-  // ---------------- Overdue tab ----------------
-  function formatOverdueDuration(endStr) {
-    const end = new Date(endStr.replace(' ', 'T'));
-    const ms = Date.now() - end.getTime();
-    const totalMinutes = Math.max(0, Math.floor(ms / 60000));
-    return `${Math.floor(totalMinutes/60)} ชม. ${totalMinutes%60} นาที`;
-  }
-  async function loadOverdue() {
-    try {
-      const res = await fetch('/overdue-bookings');
-      const json = await res.json();
-      const rows = json.data || [];
-      if (rows.length === 0) { el('overdue-tbody').innerHTML = '<tr><td colspan="6" class="empty">ไม่มีตู้ที่เกินเวลาในขณะนี้</td></tr>'; return; }
-      el('overdue-tbody').innerHTML = rows.map(b => `
-        <tr class="overdue-row">
-          <td>${b.locker_number}</td>
-          <td>${b.firstname} ${b.lastname} (${b.username})</td>
-          <td>${new Date(b.end_time.replace(' ', 'T')).toLocaleString('th-TH')}</td>
-          <td>${formatOverdueDuration(b.end_time)}</td>
-          <td class="fee-amount">${b.current_fee} บาท</td>
-          <td><button class="btn warn small" onclick="releaseBooking(${b.booking_id})">ปล่อยตู้</button></td>
-        </tr>
-      `).join('');
-    } catch (err) {
-      el('overdue-tbody').innerHTML = '<tr><td colspan="6" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
-    }
-  }
-
   // ---------------- All Bookings tab ----------------
   async function loadAllBookings() {
     try {
@@ -421,7 +345,6 @@
   async function releaseBooking(booking_id) {
     if (!confirm('ยืนยันปล่อยตู้นี้? ตู้จะกลับเป็นสถานะว่างทันที')) return;
     await fetch(`/bookings/${booking_id}/release`, { method: 'PUT' });
-    loadOverdue();
     loadAllBookings();
     loadDashboard();
   }
@@ -463,7 +386,7 @@
       const res = await fetch('/lockers');
       const json = await res.json();
       const lockers = json.data || [];
-      if (lockers.length === 0) { el('lockers-tbody').innerHTML = '<tr><td colspan="6" class="empty">ยังไม่มีตู้ล็อกเกอร์</td></tr>'; return; }
+      if (lockers.length === 0) { el('lockers-tbody').innerHTML = '<tr><td colspan="5" class="empty">ยังไม่มีตู้ล็อกเกอร์</td></tr>'; return; }
       el('lockers-tbody').innerHTML = lockers.map(l => `
         <tr>
           <td>${l.locker_number}</td>
@@ -483,11 +406,10 @@
               <option value="maintenance" ${l.status==='maintenance'?'selected':''}>ซ่อมบำรุง</option>
             </select>
           </td>
-          <td><button class="btn warn small" onclick="emergencyUnlock(${l.locker_id})">ปลดล็อกฉุกเฉิน</button></td>
         </tr>
       `).join('');
     } catch (err) {
-      el('lockers-tbody').innerHTML = '<tr><td colspan="6" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
+      el('lockers-tbody').innerHTML = '<tr><td colspan="5" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
     }
   }
   async function changeLocker(locker_id, field, value) {
@@ -497,65 +419,6 @@
   }
   window.changeLocker = changeLocker;
 
-  async function emergencyUnlock(locker_id) {
-    if (!confirm('ยืนยันปลดล็อกตู้นี้แบบฉุกเฉิน? การจองที่ค้างอยู่จะถูกปิดโดยไม่คิดค่าปรับ')) return;
-    await fetch(`/lockers/${locker_id}/emergency-unlock`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ admin_user_id: currentUser.user_id }),
-    });
-    loadLockers();
-    loadDashboard();
-    loadOverdue();
-    loadAllBookings();
-  }
-  window.emergencyUnlock = emergencyUnlock;
-
-  // ---------------- Pricing & Settings tab ----------------
-  async function loadPricing() {
-    try {
-      const res = await fetch('/pricing');
-      const json = await res.json();
-      const rows = json.data || [];
-      el('pricing-list').innerHTML = rows.map(p => `
-        <div class="price-card">
-          <div class="name">ขนาด${SIZE_LABEL[p.size] || p.size}</div>
-          <div class="edit-row">
-            <input type="number" id="price-${p.size}" value="${p.price}" min="0" step="1">
-            <button class="btn primary small" onclick="savePrice('${p.size}')">บันทึก</button>
-          </div>
-        </div>
-      `).join('');
-    } catch (err) {
-      el('pricing-list').innerHTML = '<div class="empty">เชื่อมต่อ API ไม่ได้</div>';
-    }
-  }
-  async function savePrice(size) {
-    const price = parseFloat(el(`price-${size}`).value);
-    await fetch(`/pricing/${size}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ price }) });
-    loadPricing();
-    loadLockers();
-  }
-  window.savePrice = savePrice;
-
-  async function loadSettings() {
-    try {
-      const res = await fetch('/settings');
-      const json = await res.json();
-      const d = json.data || {};
-      el('setting-late-fee').value = d.late_fee_per_hour ?? 10;
-      el('setting-duration').value = d.standard_duration_hours ?? 2;
-    } catch (err) { /* เงียบไว้ ไม่กระทบส่วนอื่น */ }
-  }
-  async function saveSetting(key) {
-    const value = key === 'late_fee_per_hour' ? parseFloat(el('setting-late-fee').value) : parseFloat(el('setting-duration').value);
-    const res = await fetch('/settings', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key, value }) });
-    const json = await res.json();
-    el('settings-msg').innerHTML = json.success
-      ? '<div style="color:var(--ok); font-size:13px; margin-top:8px;">บันทึกสำเร็จ</div>'
-      : '<div style="color:var(--danger); font-size:13px; margin-top:8px;">เกิดข้อผิดพลาด</div>';
-  }
-  window.saveSetting = saveSetting;
-
   // ---------------- Reports tab ----------------
   async function loadReports() {
     const period = el('report-period').value;
@@ -564,7 +427,7 @@
       const res = await fetch('/reports?period=' + period);
       const json = await res.json();
       const rows = json.data || [];
-      if (rows.length === 0) { el('reports-tbody').innerHTML = '<tr><td colspan="9" class="empty">ยังไม่มีข้อมูล</td></tr>'; return; }
+      if (rows.length === 0) { el('reports-tbody').innerHTML = '<tr><td colspan="8" class="empty">ยังไม่มีข้อมูล</td></tr>'; return; }
       el('reports-tbody').innerHTML = rows.map(r => `
         <tr>
           <td>${r.period_label}</td>
@@ -572,14 +435,13 @@
           <td>${r.opens}</td>
           <td>${r.closes}</td>
           <td>${r.wrong_pins}</td>
-          <td>${r.total_price}</td>
-          <td class="fee-amount">${r.total_fees}</td>
+          <td><b>${r.total_events}</b></td>
           <td class="revenue-amount">${r.total_revenue}</td>
           <td>${r.utilization_rate}%</td>
         </tr>
       `).join('');
     } catch (err) {
-      el('reports-tbody').innerHTML = '<tr><td colspan="9" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
+      el('reports-tbody').innerHTML = '<tr><td colspan="8" class="empty">เชื่อมต่อ API ไม่ได้</td></tr>';
     }
   }
   el('report-period').addEventListener('change', loadReports);
