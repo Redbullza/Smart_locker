@@ -5,18 +5,15 @@
  *  User Role-1 ผู้ใช้งาน:
  *    1. ลงทะเบียน/เข้าสู่ระบบ         -> /register, /login
  *    2. ดูสถานะตู้ (ขนาด+ราคา)        -> /lockers, /pricing
- *    3. จองตู้ + ชำระเงินจำลอง         -> /booking
+ *    3. จองตู้ + ชำระเงินด้วย QR      -> /payment-sessions, /payment-sessions/:id/confirm
  *    4. ปลดล็อกตู้ (รหัสสุ่ม)          -> /verify-pin
- *    5. แจ้งเตือน 2ชม. + คิดค่าปรับ    -> คำนวณใน /my-bookings, /verify-pin
- *    6. ดูประวัติ/ระยะเวลาที่เช่า      -> /my-bookings
+ *    5. ดูประวัติ/ระยะเวลาที่ฝาก      -> /my-bookings (ไม่จำกัดเวลา ไม่มีค่าปรับ)
  *
  *  User Role-2 ผู้ดูแลระบบ (Admin):
  *    1. จัดการผู้ใช้งาน               -> /users
  *    2. จัดการสถานะตู้ + ปล่อยตู้ค้าง  -> /lockers/:id, /bookings/:id/release
- *    3. ปลดล็อกฉุกเฉิน                -> /lockers/:id/emergency-unlock
- *    4. จัดการราคา/ค่าปรับ            -> /pricing/:size, /settings
- *    5. รายงานสถิติ (วัน/เดือน/ปี)     -> /reports
- *    6. Log ความปลอดภัย               -> /logs
+ *    3. รายงานสถิติ (วัน/เดือน/ปี)     -> /reports
+ *    4. Log ความปลอดภัย               -> /logs
  * ==================================================================
  */
 
@@ -36,22 +33,6 @@ const db = mysql.createPool({
   database: process.env.DB_NAME || 'smart_locker',
   dateStrings: true,
 });
-
-// อ่านค่าคงที่ของระบบจากตาราง settings (ปรับได้จากหน้า Admin โดยไม่ต้องแก้โค้ด)
-async function getSetting(key, fallback) {
-  const [rows] = await db.query('SELECT setting_value FROM settings WHERE setting_key = ?', [key]);
-  return rows.length ? parseFloat(rows[0].setting_value) : fallback;
-}
-
-// คำนวณค่าปรับ: ถ้าเวลาปัจจุบันเลย end_time ไปแล้ว คิดเป็นรายชั่วโมง (ปัดเศษขึ้น)
-function calculateFee(endTimeStr, referenceDate, ratePerHour) {
-  if (!endTimeStr) return 0;
-  const endTime = new Date(endTimeStr.replace(' ', 'T'));
-  const diffMs = referenceDate.getTime() - endTime.getTime();
-  if (diffMs <= 0) return 0;
-  const overdueHours = Math.ceil(diffMs / (60 * 60 * 1000));
-  return overdueHours * ratePerHour;
-}
 
 // ==================================================================
 // ส่วนที่ 1: ระบบตรวจสอบสิทธิ์การเข้าใช้งาน (User Authentication)
@@ -95,7 +76,7 @@ app.post('/login', async (req, res) => {
 });
 
 // ==================================================================
-// ส่วนที่ 2: ตู้ล็อกเกอร์ + ราคาตามขนาด
+// ส่วนที่ 2: ตู้ล็อกเกอร์ + ราคาตามขนาด (ราคาคงที่ กำหนดไว้ในฐานข้อมูลล่วงหน้า)
 // ==================================================================
 
 app.get('/lockers', async (req, res) => {
@@ -112,42 +93,21 @@ app.get('/pricing', async (req, res) => {
   res.json({ success: true, data: rows });
 });
 
-// Admin ปรับราคาตามขนาดตู้ — body: { price }
-app.put('/pricing/:size', async (req, res) => {
-  const { price } = req.body;
-  if (!price || price < 0) {
-    return res.status(400).json({ success: false, message: 'กรุณาระบุราคาที่ถูกต้อง' });
-  }
-  await db.query('UPDATE pricing SET price = ? WHERE size = ?', [price, req.params.size]);
-  res.json({ success: true, message: 'อัปเดตราคาสำเร็จ' });
-});
-
-app.get('/settings', async (req, res) => {
-  const [rows] = await db.query('SELECT * FROM settings');
-  const data = {};
-  rows.forEach(r => { data[r.setting_key] = parseFloat(r.setting_value); });
-  res.json({ success: true, data });
-});
-
-// Admin ปรับค่าปรับ/ชม. หรือระยะเวลามาตรฐาน — body: { key, value }
-app.put('/settings', async (req, res) => {
-  const { key, value } = req.body;
-  if (!['late_fee_per_hour', 'standard_duration_hours'].includes(key) || value === undefined) {
-    return res.status(400).json({ success: false, message: 'ข้อมูลไม่ถูกต้อง' });
-  }
-  await db.query(
-    'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
-    [key, value, value]
-  );
-  res.json({ success: true, message: 'อัปเดตค่าคงที่สำเร็จ' });
-});
-
 // ==================================================================
-// ส่วนที่ 3: จองตู้ + ชำระเงินจำลอง (มาตรฐาน 2 ชม. ตาม settings)
+// ส่วนที่ 3: จองตู้ + ชำระเงินด้วย QR (จำลอง)
 // ==================================================================
+// Flow: 1) POST /payment-sessions สร้าง QR ใหม่ทุกครั้ง (ref_code สุ่มไม่ซ้ำ)
+//       2) ผู้ใช้ "สแกน" แล้วกด POST /payment-sessions/:id/confirm เพื่อยืนยันจ่ายเงินจริง
+//          ตอนนั้นระบบถึงจะสร้างรายการจองจริงและสุ่มรหัส PIN ให้
+// หมายเหตุ: ฝากได้ไม่จำกัดเวลา ไม่มีค่าปรับ ไม่มีเวลาครบกำหนด
 
-// body: { user_id, locker_id }  — ระยะเวลาและราคาคำนวณจากระบบเอง ไม่ต้องกรอก
-app.post('/booking', async (req, res) => {
+function generateRefCode() {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `SL-${timestamp}-${random}`;
+}
+
+app.post('/payment-sessions', async (req, res) => {
   const { user_id, locker_id } = req.body;
 
   const [lockerRows] = await db.query(
@@ -162,30 +122,67 @@ app.post('/booking', async (req, res) => {
     return res.status(400).json({ success: false, message: 'ตู้นี้ไม่ว่าง หรืออยู่ระหว่างซ่อมบำรุง' });
   }
 
-  const standardHours = await getSetting('standard_duration_hours', 2);
-  const price = parseFloat(locker.price) || 0;
-  const pinCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const amount = parseFloat(locker.price) || 0;
+  const refCode = generateRefCode();
 
-  // จำลองการชำระเงิน: กดจองปุ๊บถือว่าจ่ายเงินสำเร็จทันที (payment_status = 'paid')
   const [result] = await db.query(
-    `INSERT INTO bookings (user_id, locker_id, pin_code, duration_hours, price, payment_status, end_time, status)
-     VALUES (?, ?, ?, ?, ?, 'paid', DATE_ADD(NOW(), INTERVAL ? HOUR), 'active')`,
-    [user_id, locker_id, pinCode, standardHours, price, standardHours]
+    `INSERT INTO payment_sessions (user_id, locker_id, amount, ref_code, status) VALUES (?, ?, ?, ?, 'pending')`,
+    [user_id, locker_id, amount, refCode]
   );
-  await db.query('UPDATE lockers SET status = "unavailable" WHERE locker_id = ?', [locker_id]);
-  await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "book")', [locker_id, user_id]);
-  await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "payment")', [locker_id, user_id]);
 
-  const [[booking]] = await db.query('SELECT end_time FROM bookings WHERE booking_id = ?', [result.insertId]);
+  const qrPayload = `SMARTLOCKER-PAY|REF:${refCode}|LOCKER:${locker.locker_number}|AMOUNT:${amount.toFixed(2)}`;
 
   res.json({
-    success: true, message: 'จองตู้และชำระเงินสำเร็จ',
-    booking_id: result.insertId, pin_code: pinCode,
-    duration_hours: standardHours, price, end_time: booking.end_time,
+    success: true,
+    session_id: result.insertId,
+    ref_code: refCode,
+    amount,
+    qr_payload: qrPayload,
+    locker_number: locker.locker_number,
+    locker_size: locker.size,
   });
 });
 
-// ดูรายการจองของผู้ใช้คนหนึ่ง พร้อมคำนวณค่าปรับปัจจุบันให้เลย
+app.put('/payment-sessions/:id/cancel', async (req, res) => {
+  await db.query(`UPDATE payment_sessions SET status = 'cancelled' WHERE session_id = ? AND status = 'pending'`, [req.params.id]);
+  res.json({ success: true, message: 'ยกเลิกรายการชำระเงินแล้ว' });
+});
+
+app.post('/payment-sessions/:id/confirm', async (req, res) => {
+  const [sessionRows] = await db.query('SELECT * FROM payment_sessions WHERE session_id = ?', [req.params.id]);
+  if (sessionRows.length === 0) {
+    return res.status(404).json({ success: false, message: 'ไม่พบรายการชำระเงินนี้' });
+  }
+  const session = sessionRows[0];
+  if (session.status !== 'pending') {
+    return res.status(400).json({ success: false, message: 'รายการชำระเงินนี้ถูกใช้ไปแล้วหรือถูกยกเลิก' });
+  }
+
+  const [lockerRows] = await db.query('SELECT * FROM lockers WHERE locker_id = ?', [session.locker_id]);
+  if (lockerRows.length === 0 || lockerRows[0].status !== 'available') {
+    return res.status(400).json({ success: false, message: 'ขออภัย ตู้นี้ถูกจองไปแล้วระหว่างที่คุณกำลังชำระเงิน' });
+  }
+
+  const pinCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // ฝากได้ไม่จำกัดเวลา จึงไม่ตั้ง end_time และไม่มีค่าปรับ
+  const [result] = await db.query(
+    `INSERT INTO bookings (user_id, locker_id, pin_code, price, payment_status, status)
+     VALUES (?, ?, ?, ?, 'paid', 'active')`,
+    [session.user_id, session.locker_id, pinCode, session.amount]
+  );
+  await db.query('UPDATE lockers SET status = "unavailable" WHERE locker_id = ?', [session.locker_id]);
+  await db.query(`UPDATE payment_sessions SET status = 'paid' WHERE session_id = ?`, [req.params.id]);
+  await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "payment")', [session.locker_id, session.user_id]);
+  await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "book")', [session.locker_id, session.user_id]);
+
+  res.json({
+    success: true, message: 'ชำระเงินสำเร็จ จองตู้เรียบร้อยแล้ว',
+    booking_id: result.insertId, pin_code: pinCode, price: session.amount,
+  });
+});
+
+// ดูรายการจองของผู้ใช้คนหนึ่ง (แสดงระยะเวลาที่ฝากไปแล้ว ไม่มีค่าปรับ ไม่มีกำหนดคืน)
 app.get('/my-bookings', async (req, res) => {
   const { user_id } = req.query;
   const [rows] = await db.query(
@@ -194,18 +191,7 @@ app.get('/my-bookings', async (req, res) => {
      WHERE b.user_id = ? ORDER BY b.created_at DESC`,
     [user_id]
   );
-
-  const rate = await getSetting('late_fee_per_hour', 10);
-  const now = new Date();
-  const data = rows.map(b => {
-    if (b.status === 'active') {
-      const currentFee = calculateFee(b.end_time, now, rate);
-      return { ...b, is_overdue: currentFee > 0, current_fee: currentFee };
-    }
-    return { ...b, is_overdue: false, current_fee: 0 };
-  });
-
-  res.json({ success: true, data });
+  res.json({ success: true, data: rows });
 });
 
 // ==================================================================
@@ -230,16 +216,8 @@ app.post('/verify-pin', async (req, res) => {
 
   // TODO: ในระบบจริงจะยิง request ไปสั่งงานบอร์ด ESP32 ตรงนี้
 
-  let fee = 0;
   if (action === 'close') {
-    const rate = await getSetting('late_fee_per_hour', 10);
-    const now = new Date();
-    fee = calculateFee(booking.end_time, now, rate);
-
-    await db.query(
-      'UPDATE bookings SET status = "completed", completed_at = NOW(), fee = ? WHERE booking_id = ?',
-      [fee, booking_id]
-    );
+    await db.query('UPDATE bookings SET status = "completed", completed_at = NOW() WHERE booking_id = ?', [booking_id]);
     await db.query('UPDATE lockers SET status = "available" WHERE locker_id = ?', [booking.locker_id]);
   }
 
@@ -247,11 +225,11 @@ app.post('/verify-pin', async (req, res) => {
     booking.locker_id, booking.user_id, action,
   ]);
 
-  res.json({ success: true, message: action === 'open' ? 'ปลดล็อกตู้สำเร็จ' : 'คืนตู้สำเร็จ', fee });
+  res.json({ success: true, message: action === 'open' ? 'ปลดล็อกตู้สำเร็จ' : 'คืนตู้สำเร็จ' });
 });
 
 // ==================================================================
-// ส่วนที่ 5: ประวัติการใช้งาน + รายการเกินเวลา (Admin)
+// ส่วนที่ 5: ประวัติการใช้งาน (Admin)
 // ==================================================================
 
 app.get('/logs', async (req, res) => {
@@ -275,21 +253,6 @@ app.get('/dashboard', async (req, res) => {
     FROM lockers
   `);
   res.json({ success: true, data: summary });
-});
-
-app.get('/overdue-bookings', async (req, res) => {
-  const [rows] = await db.query(
-    `SELECT b.*, l.locker_number, l.location, u.username, u.firstname, u.lastname
-     FROM bookings b
-     JOIN lockers l ON b.locker_id = l.locker_id
-     JOIN users u ON b.user_id = u.user_id
-     WHERE b.status = 'active' AND b.end_time < NOW()
-     ORDER BY b.end_time ASC`
-  );
-  const rate = await getSetting('late_fee_per_hour', 10);
-  const now = new Date();
-  const data = rows.map(b => ({ ...b, current_fee: calculateFee(b.end_time, now, rate) }));
-  res.json({ success: true, data });
 });
 
 // รายการจองทั้งหมด (Admin) — ใช้ปล่อยตู้ที่ไม่มีคนมาใช้งานได้
@@ -346,10 +309,9 @@ app.put('/users/:id/status', async (req, res) => {
 });
 
 // ==================================================================
-// ส่วนที่ 7: จัดการตู้ล็อกเกอร์ + ปลดล็อกฉุกเฉิน (Admin)
+// ส่วนที่ 7: จัดการตู้ล็อกเกอร์ (เปิด/ปิด/ซ่อมบำรุง/ขนาด) — Admin
 // ==================================================================
 
-// body: { status?, size? } — แก้ได้ทีละอย่างหรือพร้อมกัน
 app.put('/lockers/:id', async (req, res) => {
   const { status, size } = req.body;
   const fields = [];
@@ -379,36 +341,6 @@ app.put('/lockers/:id', async (req, res) => {
   res.json({ success: true, message: 'อัปเดตตู้ล็อกเกอร์สำเร็จ' });
 });
 
-// ปลดล็อกตู้ฉุกเฉิน กรณีตู้ขัดข้อง — ไม่ต้องใช้ PIN, ปิดรายการจองที่ค้างอยู่ให้อัตโนมัติ (ไม่คิดค่าปรับ)
-app.post('/lockers/:id/emergency-unlock', async (req, res) => {
-  const lockerId = req.params.id;
-
-  const [lockerRows] = await db.query('SELECT * FROM lockers WHERE locker_id = ?', [lockerId]);
-  if (lockerRows.length === 0) {
-    return res.status(404).json({ success: false, message: 'ไม่พบตู้ล็อกเกอร์นี้' });
-  }
-
-  const [activeBookings] = await db.query(
-    'SELECT * FROM bookings WHERE locker_id = ? AND status = "active"', [lockerId]
-  );
-
-  if (activeBookings.length > 0) {
-    const booking = activeBookings[0];
-    // ปลดล็อกฉุกเฉิน ไม่คิดค่าปรับ (fee = 0) เพราะเป็นความผิดของระบบ ไม่ใช่ผู้ใช้
-    await db.query('UPDATE bookings SET status = "completed", completed_at = NOW(), fee = 0 WHERE booking_id = ?', [booking.booking_id]);
-    await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "emergency_open")', [lockerId, booking.user_id]);
-  } else {
-    // ไม่มีการจองค้าง แต่ admin เป็นคนสั่งปลดล็อก บันทึก log โดยใช้ user_id ของ admin เอง (ถ้าส่งมา)
-    const adminUserId = req.body.admin_user_id || null;
-    if (adminUserId) {
-      await db.query('INSERT INTO logs (locker_id, user_id, action) VALUES (?, ?, "emergency_open")', [lockerId, adminUserId]);
-    }
-  }
-
-  await db.query('UPDATE lockers SET status = "available" WHERE locker_id = ?', [lockerId]);
-  res.json({ success: true, message: 'ปลดล็อกตู้ฉุกเฉินสำเร็จ ตู้กลับเป็นสถานะว่างแล้ว' });
-});
-
 // ==================================================================
 // ส่วนที่ 8: รายงานสถิติ — รายวัน/รายเดือน/รายปี + รายได้รวม + อัตราการใช้ตู้
 // ==================================================================
@@ -432,35 +364,20 @@ app.get('/reports', async (req, res) => {
     [dateFormat]
   );
 
-  // รายได้จากค่าบริการ (นับตอนจอง) + ค่าปรับ (นับตอนคืนตู้)
+  // รายได้จากค่าบริการ (นับตอนจอง — ไม่มีค่าปรับแล้วเพราะฝากได้ไม่จำกัดเวลา)
   const [priceRows] = await db.query(
     `SELECT DATE_FORMAT(created_at, ?) AS period_label, SUM(price) AS total_price
      FROM bookings WHERE payment_status = 'paid' GROUP BY period_label`,
     [dateFormat]
   );
-  const [feeRows] = await db.query(
-    `SELECT DATE_FORMAT(completed_at, ?) AS period_label, SUM(fee) AS total_fees
-     FROM bookings WHERE completed_at IS NOT NULL GROUP BY period_label`,
-    [dateFormat]
-  );
-
   const priceMap = {}; priceRows.forEach(r => { priceMap[r.period_label] = parseFloat(r.total_price) || 0; });
-  const feeMap = {}; feeRows.forEach(r => { feeMap[r.period_label] = parseFloat(r.total_fees) || 0; });
 
   const [[{ total_lockers }]] = await db.query('SELECT COUNT(*) AS total_lockers FROM lockers');
 
   const data = logRows.map(r => {
-    const totalPrice = priceMap[r.period_label] || 0;
-    const totalFees = feeMap[r.period_label] || 0;
-    // อัตราการใช้ตู้แบบง่าย: จำนวนครั้งที่จองในช่วงนั้น เทียบกับจำนวนตู้ทั้งหมด (%)
+    const totalRevenue = priceMap[r.period_label] || 0;
     const utilizationRate = total_lockers > 0 ? Math.round((r.bookings / total_lockers) * 100) : 0;
-    return {
-      ...r,
-      total_price: totalPrice,
-      total_fees: totalFees,
-      total_revenue: totalPrice + totalFees,
-      utilization_rate: utilizationRate,
-    };
+    return { ...r, total_revenue: totalRevenue, utilization_rate: utilizationRate };
   });
 
   res.json({ success: true, period, data });
