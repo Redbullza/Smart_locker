@@ -86,11 +86,9 @@
   .locker .btn { margin-top:10px; width:100%; padding:8px 10px; font-size:12px; }
 
   .booking { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
-  .booking.overdue { border-color:var(--danger); background:var(--danger-soft); }
   .booking .info { font-size:13px; }
   .booking .info b { font-family:'Fraunces',serif; font-size:16px; font-weight:600; }
   .booking .pin-tag { font-family:'IBM Plex Mono',monospace; background:var(--gold-soft); color:var(--gold); padding:2px 8px; border-radius:6px; font-size:11.5px; margin-left:6px; }
-  .booking .fee-tag { font-family:'IBM Plex Mono',monospace; background:var(--danger); color:#fff; padding:2px 8px; border-radius:6px; font-size:11.5px; margin-left:6px; }
   .booking .actions { display:flex; gap:8px; flex-wrap:wrap; }
 
   .empty { text-align:center; padding:36px 16px; color:var(--muted); font-size:13.5px; border:1px dashed var(--line); border-radius:12px; }
@@ -123,6 +121,7 @@
   }
   @media (prefers-reduced-motion: reduce) { .locker { transition:none; } }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -185,19 +184,21 @@
 
 </div>
 
-<!-- Modal: ยืนยันจอง + ชำระเงินจำลอง -->
-<div class="overlay" id="booking-confirm-overlay">
+<!-- Modal: สแกน QR เพื่อชำระเงิน (จำลอง) -->
+<div class="overlay" id="qr-payment-overlay">
   <div class="modal">
-    <h3>ยืนยันการจองตู้</h3>
-    <p>ตรวจสอบรายละเอียดก่อนกดยืนยัน ระบบจะสุ่มรหัส PIN ให้หลังชำระเงินสำเร็จ</p>
-    <div class="info-row"><span>ตู้หมายเลข</span><b id="confirm-locker-number">–</b></div>
-    <div class="info-row"><span>ขนาด</span><b id="confirm-locker-size">–</b></div>
-    <div class="info-row"><span>ระยะเวลาเช่ามาตรฐาน</span><b id="confirm-duration">2 ชั่วโมง</b></div>
-    <div class="info-row total"><span>ค่าบริการ</span><b id="confirm-price">– บาท</b></div>
-    <div id="booking-confirm-msg"></div>
+    <h3>สแกนเพื่อชำระเงิน</h3>
+    <p>ตู้หมายเลข <b id="qr-locker-number">–</b> · ขนาด<span id="qr-locker-size">–</span> — QR นี้จะไม่ซ้ำกับครั้งก่อนแม้ราคาจะเท่ากัน</p>
+    <div style="display:flex; justify-content:center; margin: 14px 0;">
+      <div id="qr-code-canvas" style="background:#fff; padding:10px; border-radius:10px; border:1px solid var(--line);"></div>
+    </div>
+    <div class="info-row"><span>จำนวนเงิน</span><b id="qr-amount" style="color:var(--gold); font-size:16px;">– บาท</b></div>
+    <div class="info-row"><span>รหัสอ้างอิง</span><b id="qr-ref-code" style="font-family:'IBM Plex Mono',monospace; font-size:11.5px;">–</b></div>
+    <p style="text-align:center; font-size:11.5px; color:var(--muted); margin-top:10px;">* QR จำลองสำหรับสาธิตระบบเท่านั้น ไม่ใช่ QR ชำระเงินจริง</p>
+    <div id="qr-payment-msg"></div>
     <div class="modal-actions">
-      <button class="btn ghost" id="booking-confirm-cancel">ยกเลิก</button>
-      <button class="btn primary" id="booking-confirm-pay">ยืนยันจองและจ่ายเงิน</button>
+      <button class="btn ghost" id="qr-payment-cancel">ยกเลิก</button>
+      <button class="btn primary" id="qr-payment-confirm">ฉันชำระเงินแล้ว</button>
     </div>
   </div>
 </div>
@@ -210,7 +211,7 @@
     <div style="text-align:center; margin-bottom:14px;">
       <span class="pin-tag" style="font-size:20px; padding:10px 20px;" id="pin-result-code">------</span>
     </div>
-    <div class="info-row"><span>ครบกำหนดคืนตู้</span><b id="pin-result-endtime">–</b></div>
+    <div class="info-row"><span>สถานะ</span><b>ฝากได้ไม่จำกัดเวลา</b></div>
     <div class="modal-actions">
       <button class="btn primary" id="pin-result-close">รับทราบ</button>
     </div>
@@ -347,61 +348,92 @@
     }
   }
 
-  // ---------------- จองตู้: ยืนยัน + จำลองจ่ายเงิน ----------------
-  function openBookingConfirm(locker) {
+  // ---------------- จองตู้: สร้าง QR session แล้วสแกนจ่ายเงิน (จำลอง) ----------------
+  let currentQrInstance = null;
+  let pendingSessionId = null;
+
+  async function openBookingConfirm(locker) {
     if (!currentUser) return;
     pendingBooking = locker;
-    el('confirm-locker-number').textContent = locker.locker_number;
-    el('confirm-locker-size').textContent = SIZE_LABEL[locker.size] || locker.size;
-    el('confirm-price').textContent = locker.price + ' บาท';
-    el('booking-confirm-msg').innerHTML = '';
-    el('booking-confirm-overlay').classList.add('show');
+
+    try {
+      const res = await fetch('/payment-sessions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: currentUser.user_id, locker_id: locker.locker_id }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ${res.status}): ${text.slice(0, 200)}`);
+      }
+      const json = await res.json();
+      if (!json.success) { alert(json.message); return; }
+
+      pendingSessionId = json.session_id;
+      el('qr-locker-number').textContent = json.locker_number;
+      el('qr-locker-size').textContent = SIZE_LABEL[json.locker_size] || json.locker_size;
+      el('qr-amount').textContent = json.amount + ' บาท';
+      el('qr-ref-code').textContent = json.ref_code;
+      el('qr-payment-msg').innerHTML = '';
+
+      // สร้าง QR ใหม่ทุกครั้ง (ref_code สุ่มใหม่เสมอ แม้ราคาจะเท่าเดิม)
+      const qrContainer = el('qr-code-canvas');
+      qrContainer.innerHTML = '';
+      currentQrInstance = new QRCode(qrContainer, {
+        text: json.qr_payload,
+        width: 180,
+        height: 180,
+      });
+
+      el('qr-payment-overlay').classList.add('show');
+    } catch (err) {
+      alert('เกิดข้อผิดพลาด: ' + err.message + '\nตรวจสอบว่ารัน migration-qr-payment.sql แล้วหรือยัง');
+      console.error('Create payment session error:', err);
+    }
   }
   window.openBookingConfirm = openBookingConfirm;
 
-  el('booking-confirm-cancel').addEventListener('click', () => {
-    el('booking-confirm-overlay').classList.remove('show');
+  el('qr-payment-cancel').addEventListener('click', async () => {
+    if (pendingSessionId) {
+      fetch(`/payment-sessions/${pendingSessionId}/cancel`, { method: 'PUT' }).catch(() => {});
+    }
+    el('qr-payment-overlay').classList.remove('show');
+    pendingSessionId = null;
     pendingBooking = null;
   });
 
-  el('booking-confirm-pay').addEventListener('click', async () => {
-    if (!pendingBooking) return;
-    const payBtn = el('booking-confirm-pay');
-    payBtn.disabled = true;
-    payBtn.textContent = 'กำลังดำเนินการ...';
-    el('booking-confirm-msg').innerHTML = '';
+  el('qr-payment-confirm').addEventListener('click', async () => {
+    if (!pendingSessionId) return;
+    const confirmBtn = el('qr-payment-confirm');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'กำลังตรวจสอบ...';
+    el('qr-payment-msg').innerHTML = '';
 
     try {
-      const res = await fetch('/booking', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: currentUser.user_id, locker_id: pendingBooking.locker_id }),
-      });
+      const res = await fetch(`/payment-sessions/${pendingSessionId}/confirm`, { method: 'POST' });
 
       if (!res.ok) {
-        // เซิร์ฟเวอร์ตอบกลับเป็น error (เช่น 500) — อ่านเป็นข้อความธรรมดาแทน เพราะอาจไม่ใช่ JSON
         const text = await res.text();
         throw new Error(`เซิร์ฟเวอร์ตอบกลับผิดพลาด (HTTP ${res.status}): ${text.slice(0, 200)}`);
       }
 
       const json = await res.json();
       if (!json.success) {
-        el('booking-confirm-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
+        el('qr-payment-msg').innerHTML = `<div class="msg error">${json.message}</div>`;
         return;
       }
 
-      el('booking-confirm-overlay').classList.remove('show');
+      el('qr-payment-overlay').classList.remove('show');
+      pendingSessionId = null;
       el('pin-result-code').textContent = json.pin_code;
-      el('pin-result-endtime').textContent = new Date(json.end_time.replace(' ', 'T')).toLocaleString('th-TH');
       el('pin-result-overlay').classList.add('show');
       loadLockers();
       loadMyBookings();
     } catch (err) {
-      // แสดง error จริงให้เห็น แทนที่จะค้างเงียบ ๆ โดยไม่มีข้อความ
-      el('booking-confirm-msg').innerHTML = `<div class="msg error">เกิดข้อผิดพลาด: ${err.message}<br>ตรวจสอบว่ารัน migration.sql ครบแล้วหรือยัง (ต้องมีตาราง pricing และ settings)</div>`;
-      console.error('Booking error:', err);
+      el('qr-payment-msg').innerHTML = `<div class="msg error">เกิดข้อผิดพลาด: ${err.message}<br>ตรวจสอบว่ารัน migration-qr-payment.sql ครบแล้วหรือยัง</div>`;
+      console.error('Confirm payment error:', err);
     } finally {
-      payBtn.disabled = false;
-      payBtn.textContent = 'ยืนยันจองและจ่ายเงิน';
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'ฉันชำระเงินแล้ว';
     }
   });
 
@@ -432,15 +464,14 @@
     }
 
     box.innerHTML = bookings.map(b => `
-      <div class="booking ${b.is_overdue ? 'overdue' : ''}">
+      <div class="booking">
         <div class="info">
           ตู้ <b>${b.locker_number}</b>
           <span class="pin-tag">PIN: ${b.pin_code}</span>
-          ${b.is_overdue ? `<span class="fee-tag">เกินเวลา! ค่าปรับ ${b.current_fee} บาท</span>` : ''}
           <br>
           <span style="color:var(--muted);">${b.location} · จ่ายแล้ว ${b.price} บาท</span><br>
           <span style="color:var(--muted); font-size:12px;">
-            ใช้งานมาแล้ว ${formatDuration(b.created_at)} · กำหนดคืน ${new Date(b.end_time.replace(' ', 'T')).toLocaleString('th-TH')}
+            ฝากมาแล้ว ${formatDuration(b.created_at)} · ไม่จำกัดเวลา ไม่มีค่าปรับ
           </span>
         </div>
         <div class="actions">
@@ -498,13 +529,8 @@
       loadMyBookings();
 
       if (wasClose) {
-        if (json.fee > 0) {
-          el('return-result-title').textContent = 'คืนตู้สำเร็จ (คืนช้ากว่ากำหนด)';
-          el('return-result-desc').textContent = `กรุณาชำระค่าปรับ ${json.fee} บาท ที่เคาน์เตอร์ผู้ดูแลระบบ`;
-        } else {
-          el('return-result-title').textContent = 'คืนตู้สำเร็จ';
-          el('return-result-desc').textContent = 'คืนตู้ตรงเวลา ไม่มีค่าปรับ ขอบคุณที่ใช้บริการ';
-        }
+        el('return-result-title').textContent = 'คืนตู้สำเร็จ';
+        el('return-result-desc').textContent = 'ขอบคุณที่ใช้บริการ';
         el('return-result-overlay').classList.add('show');
       }
     } catch (err) {
