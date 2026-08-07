@@ -77,10 +77,12 @@ app.get('/lockers', async (req, res) => {
 // ==================================================================
 
 app.post('/booking', async (req, res) => {
-  const { user_id, locker_id } = req.body;
+  const { user_id, locker_id, hours } = req.body;
   if (!user_id || !locker_id) {
     return res.status(400).json({ success: false, message: 'กรุณาระบุ user_id และ locker_id' });
   }
+  // hours เป็นแค่ข้อมูลอ้างอิงว่าผู้ใช้ "ตั้งใจ" จะฝากกี่ชั่วโมง ไม่บังคับ ไม่มีผลต่อค่าปรับหรือการล็อกตู้
+  const plannedHours = Number.isInteger(hours) && hours > 0 ? hours : null;
 
   const lockerResult = await pool.query('SELECT * FROM lockers WHERE locker_id = $1', [locker_id]);
   if (lockerResult.rows.length === 0) {
@@ -93,11 +95,11 @@ app.post('/booking', async (req, res) => {
 
   const pinCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // ฝากได้ไม่จำกัดเวลา และไม่มีค่าใช้จ่าย จึงไม่ต้องตั้ง end_time หรือ price
+  // ฝากได้ไม่จำกัดเวลาจริง (planned_hours เก็บไว้แสดงผลเฉยๆ) จึงไม่ต้องตั้ง end_time หรือ price
   const bookingResult = await pool.query(
-    `INSERT INTO bookings (user_id, locker_id, pin_code, status)
-     VALUES ($1, $2, $3, 'active') RETURNING booking_id`,
-    [user_id, locker_id, pinCode]
+    `INSERT INTO bookings (user_id, locker_id, pin_code, planned_hours, status)
+     VALUES ($1, $2, $3, $4, 'active') RETURNING booking_id`,
+    [user_id, locker_id, pinCode, plannedHours]
   );
 
   await pool.query('UPDATE lockers SET status = $1 WHERE locker_id = $2', ['unavailable', locker_id]);
@@ -108,6 +110,7 @@ app.post('/booking', async (req, res) => {
     booking_id: bookingResult.rows[0].booking_id,
     pin_code: pinCode,
     locker_number: locker.locker_number,
+    planned_hours: plannedHours,
   });
 });
 
