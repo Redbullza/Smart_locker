@@ -193,6 +193,7 @@
       <div id="qr-code-canvas" style="background:#fff; padding:10px; border-radius:10px; border:1px solid var(--line);"></div>
     </div>
     <div class="info-row"><span>จำนวนเงิน</span><b id="qr-amount" style="color:var(--gold); font-size:16px;">– บาท</b></div>
+    <div class="info-row"><span>ตั้งใจฝาก</span><b id="qr-hours">–</b></div>
     <div class="info-row"><span>รหัสอ้างอิง</span><b id="qr-ref-code" style="font-family:'IBM Plex Mono',monospace; font-size:11.5px;">–</b></div>
     <p style="text-align:center; font-size:11.5px; color:var(--muted); margin-top:10px;">* QR จำลองสำหรับสาธิตระบบเท่านั้น ไม่ใช่ QR ชำระเงินจริง</p>
     <div id="qr-payment-msg"></div>
@@ -326,7 +327,7 @@
             <div class="number">${l.locker_number}</div>
             <div class="size-tag">ขนาด${SIZE_LABEL[l.size] || l.size}</div>
             <div class="location">${l.location}</div>
-            <div class="price">${l.price} บาท / 2 ชม.</div>
+            <div class="price">${l.price} บาท / ครั้ง</div>
             <span class="pill">${STATUS_LABEL[l.status] || l.status}</span>
             ${l.status === 'available'
               ? `<button class="btn primary" onclick='openBookingConfirm(${JSON.stringify({locker_id:l.locker_id, locker_number:l.locker_number, size:l.size, price:l.price})})' ${currentUser ? '' : 'disabled'}>
@@ -356,10 +357,17 @@
     if (!currentUser) return;
     pendingBooking = locker;
 
+    // ให้ผู้ใช้เลือกเองว่าตั้งใจจะฝากกี่ชั่วโมง (ไม่บังคับ เว้นว่างได้ถ้าไม่แน่ใจ — ไม่มีผลต่อราคาหรือค่าปรับ)
+    const hoursInput = window.prompt('ตั้งใจจะฝากกี่ชั่วโมง? (ไม่บังคับ เว้นว่างไว้ได้)', '');
+    if (hoursInput === null) return; // กดยกเลิก
+    let hours = null;
+    const parsedHours = parseInt(hoursInput.trim(), 10);
+    if (!Number.isNaN(parsedHours) && parsedHours > 0) hours = parsedHours;
+
     try {
       const res = await fetch('/payment-sessions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: currentUser.user_id, locker_id: locker.locker_id }),
+        body: JSON.stringify({ user_id: currentUser.user_id, locker_id: locker.locker_id, hours }),
       });
       if (!res.ok) {
         const text = await res.text();
@@ -372,6 +380,7 @@
       el('qr-locker-number').textContent = json.locker_number;
       el('qr-locker-size').textContent = SIZE_LABEL[json.locker_size] || json.locker_size;
       el('qr-amount').textContent = json.amount + ' บาท';
+      el('qr-hours').textContent = json.planned_hours ? (json.planned_hours + ' ชั่วโมง') : 'ไม่ระบุ';
       el('qr-ref-code').textContent = json.ref_code;
       el('qr-payment-msg').innerHTML = '';
 
@@ -471,7 +480,7 @@
           <br>
           <span style="color:var(--muted);">${b.location} · จ่ายแล้ว ${b.price} บาท</span><br>
           <span style="color:var(--muted); font-size:12px;">
-            ฝากมาแล้ว ${formatDuration(b.created_at)} · ไม่จำกัดเวลา ไม่มีค่าปรับ
+            ฝากมาแล้ว ${formatDuration(b.created_at)}${b.planned_hours ? ` · ตั้งใจฝากไว้ ${b.planned_hours} ชม.` : ''} · ไม่มีค่าปรับหากคืนช้า
           </span>
         </div>
         <div class="actions">
