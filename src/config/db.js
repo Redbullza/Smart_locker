@@ -1,19 +1,16 @@
 const { Pool } = require('pg');
 
 // เชื่อมต่อฐานข้อมูล Supabase PostgreSQL ผ่าน Pool
+// ตั้ง timezone เป็นเวลาไทยตั้งแต่ตอน connection เริ่มต้น (ผ่าน startup options ของ libpq)
+// แทนที่จะยิง query "SET TIME ZONE" แยกทีหลังบน pool.on('connect') — วิธีเดิมมีช่วงเวลาที่
+// connection ถูกส่งไปใช้ query จริงพร้อมๆ กับ query ตั้ง timezone ที่ยังไม่เสร็จ ทำให้ชนกัน
+// (ตัว driver จะรัน query 2 อันบน connection เดียวพร้อมกันไม่ได้) เกิดเป็น deprecation warning/error
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  options: '-c TimeZone=Asia/Bangkok',
   ssl: {
     rejectUnauthorized: false, // จำเป็นสำหรับการเชื่อมต่อ Supabase บน Cloud
   },
-});
-
-// ตั้งค่า timezone ของทุก connection ในระบบ Pool ให้เป็นเวลาไทย
-// (ไม่งั้น NOW() ในฐานข้อมูลจะได้เวลา UTC ทำให้ timestamp ใน logs ผิดเวลา)
-pool.on('connect', (client) => {
-  client.query("SET TIME ZONE 'Asia/Bangkok'").catch((err) => {
-    console.error('ตั้งค่า timezone ของ connection ไม่สำเร็จ:', err.message);
-  });
 });
 
 // สำคัญมาก: node-postgres กำหนดว่าต้อง listen 'error' บน pool เสมอ
